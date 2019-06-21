@@ -1,0 +1,4 @@
+#!/bin/bash
+set -euo pipefail
+
+echo 'this.is.a.fake.apkanalyzer.for.testing'

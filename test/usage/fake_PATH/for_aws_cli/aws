@@ -1,0 +1,4 @@
+#!/bin/bash
+set -euo pipefail
+
+echo '{ "message": "This is a fake AWS CLI for testing." }'

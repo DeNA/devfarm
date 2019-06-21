@@ -1,0 +1,26 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.12
+    steps:
+      - run:
+          name: Install dependencies
+          command: |
+            go env
+            go get -u github.com/go-bindata/go-bindata/go-bindata
+            go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
+            go mod download
+      - checkout
+      - run:
+          name: Build assets
+          command: go generate ./...
+      - run:
+          name: Test
+          command: ./test/test-all.bash
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build

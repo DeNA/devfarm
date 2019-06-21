@@ -1,0 +1,35 @@
+#!/bin/bash
+set -euo pipefail
+
+BASE_DIR="$(cd "$(git rev-parse --show-toplevel)"; pwd)"
+ASSUMED_GOROOT_BIN="$(go env GOROOT)/bin"
+
+devfarmagent() {
+	go run ./cmd/devfarmagent/main.go "$@"
+}
+
+run() {
+	echo "\$ $@"
+	"$@" || true
+	echo
+}
+
+should_success() {
+	echo "\$ $@"
+	"$@"
+	echo
+}
+
+should_fail() {
+	echo "\$ $@"
+	"$@" && false || true
+	echo
+}
+
+(cd "$BASE_DIR"
+	echo '```console'
+
+	should_fail devfarmagent aws-device-farm run --help
+
+	echo '```'
+)

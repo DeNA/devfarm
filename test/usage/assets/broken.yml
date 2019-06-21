@@ -1,0 +1,11 @@
+instance_groups:
+  example:
+    - platform: any-platform
+      ios: 12.0
+      # expected device
+      apk: path/to/app.ipa  # expected ipa
+    - platform: any-platform
+      my_os: 2.0
+
+  other:
+    - android: 9

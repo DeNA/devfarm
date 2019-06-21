@@ -1,0 +1,7 @@
+{
+  "name": "devfarm-ios-deploy-agent",
+  "private": true,
+  "dependencies": {
+    "ios-deploy": "^1.9.4"
+  }
+}

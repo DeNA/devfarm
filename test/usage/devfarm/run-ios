@@ -1,0 +1,53 @@
+#!/bin/bash
+set -euo pipefail
+
+BASE_DIR="$(cd "$(git rev-parse --show-toplevel)"; pwd)"
+ASSUMED_GOROOT_BIN="$(go env GOROOT)/bin"
+
+NO_AWS_PATH="${ASSUMED_GOROOT_BIN}:/bin:/usr/bin"
+FAKE_AWS_BIN="${BASE_DIR}/test/usage/fake_PATH/for_aws_cli"
+FAKE_AWS_PATH="${FAKE_AWS_BIN}:${NO_AWS_PATH}"
+
+devfarm() {
+	go run ./cmd/devfarm/main.go "$@"
+}
+
+should_success() {
+	echo "\$ $@"
+	"$@"
+	echo
+}
+
+should_fail() {
+	echo "\$ $@"
+	"$@" && false || true
+	echo
+}
+
+should_success_but_skipped() {
+	echo "\$ $@"
+	"$@" || true
+	echo
+}
+
+(cd "$BASE_DIR"
+	echo '```console'
+
+	should_fail devfarm run-ios --help
+
+	(export PATH="$FAKE_AWS_PATH"
+		should_success which aws
+
+		# XXX: Fix to can run --dry-run if the arguments are correct.
+		should_success_but_skipped devfarm run-ios \
+			--instance-group example \
+			--platform aws-device-farm \
+			--device 'apple iphone xs' \
+			--os-version 12.0 \
+			--ipa './test/usage/assets/app.ipa' \
+			--args-json '["-ARG", "VALUE"]' \
+			--dry-run
+	)
+
+	echo '```'
+)

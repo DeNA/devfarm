@@ -1,0 +1,131 @@
+#!/bin/bash
+set -euo pipefail
+
+# USAGE: This script is for simulating to run spec.yml with several fakes.
+
+BASE_DIR="$(cd "$(dirname "$0")/../../.."; pwd)"
+
+
+for platform in {iOS,Android}; do
+	echo -e "\n\n------- $platform ---------"
+
+	(cd "$BASE_DIR"
+		set -x
+
+		FAKE_PATH=$(mktemp -d "/tmp/devfarm-aws-device-farm-workflows-tests.XXXXXX")
+
+		# > Name of the device on which your tests run. It represents the unique device identifer (UDID) of the device.
+		# SEE: https://docs.aws.amazon.com/devicefarm/latest/developerguide/custom-test-environment-env.html
+		export DEVICEFARM_DEVICE_NAME='ANY_DEVICE_NAME'
+
+		# > The device platform name. It is either Android or iOS.
+		# SEE: https://docs.aws.amazon.com/devicefarm/latest/developerguide/custom-test-environment-env.html
+		export DEVICEFARM_DEVICE_PLATFORM_NAME="$platform"
+		
+		# > The path to the mobile app on the host machine where the tests are being executed.
+		# > The app path is available for mobile apps only.
+		# SEE: https://docs.aws.amazon.com/devicefarm/latest/developerguide/custom-test-environment-env.html
+		case "$platform" in
+			"iOS")
+				export DEVICEFARM_APP_PATH="${FAKE_PATH}/app.ipa"
+				;;
+			"Android")
+				export DEVICEFARM_APP_PATH="${FAKE_PATH}/app.apk"
+				;;
+			*)
+				false
+				;;
+		esac
+		touch "$DEVICEFARM_APP_PATH"
+		
+		# > The unique identifier of the mobile device running the automated test.
+		# SEE: https://docs.aws.amazon.com/devicefarm/latest/developerguide/custom-test-environment-env.html
+		export DEVICEFARM_DEVICE_UDID='ANY_DEVICE_UDID'
+
+		# > The path to the log files generated during the test run.
+		# SEE: https://docs.aws.amazon.com/devicefarm/latest/developerguide/custom-test-environment-env.html
+		export DEVICEFARM_LOG_DIR="${FAKE_PATH}/logs"
+		mkdir -p "$DEVICEFARM_LOG_DIR"
+		
+		# > The path to the screenshots, if any, captured during the test run.
+		# SEE: https://docs.aws.amazon.com/devicefarm/latest/developerguide/custom-test-environment-env.html
+		export DEVICEFARM_SCREENSHOT_PATH="${FAKE_PATH}/screenshots"
+		mkdir -p "$DEVICEFARM_LOG_DIR"
+		
+		# > The version of the Chrome browser.
+		# SEE: https://docs.aws.amazon.com/devicefarm/latest/developerguide/custom-test-environment-env.html
+		export DEVICEFARM_CHROMEDRIVER_EXECUTABLE="${FAKE_PATH}/chromedriver"
+		touch "$DEVICEFARM_CHROMEDRIVER_EXECUTABLE"
+
+		# > The path to the unzipped contents of the test package file.
+		export DEVICEFARM_TEST_PACKAGE_PATH="${BASE_DIR}/assets"
+
+		export DEVFARM_AGENT_BUNDLE_ID="ANY_BUNDLE_ID"
+		export DEVFARM_AGENT_APP_ARGS_ENCODED="W10="
+		export DEVFARM_AGENT_LIFETIME_SEC=900
+		export DEVFARM_AGENT_SUB_CMD="run"
+
+		# XXX: These fakes are available only sub shells.
+		spy() {
+			local cmd="$1"
+			shift
+			local args="$@"
+			echo -- "$cmd" "$args" 1>&2
+		}
+
+		echo 'Appium REST http interface listener started on 0.0.0.0:4723' > "$DEVICEFARM_LOG_DIR/appiumlog.txt"
+
+		source "${DEVICEFARM_TEST_PACKAGE_PATH}/aws-device-farm/workflows/0-shared.bash"
+
+		npm() {
+			spy "ln" "$@"
+		}
+
+		ios-deploy() {
+			spy "ios-deploy" "$@"
+		}
+
+		adb() {
+			spy "adb" "$@"
+		}
+
+		unzip() {
+			spy "unzip" "$@"
+		}
+
+		xcodebuild() {
+			spy "xcodebuild" "$@"
+		}
+
+		ls() {
+			spy "ls" "$@"
+		}
+
+		xargs() {
+			spy "xargs" "$@"
+		}
+
+		mv() {
+			spy "mv" "$@"
+		}
+
+		find() {
+			spy "find" "$@"
+			echo '/path/to/example.ipa/Payload/Example.app'
+		}
+
+		mkdir() {
+			spy "mkdir" "$@"
+		}
+
+		devfarmagent() {
+			spy "devfarmagent" "$@"
+		}
+
+		# XXX: To use fake functions defined above as commands.
+		(source "${DEVICEFARM_TEST_PACKAGE_PATH}/aws-device-farm/workflows/1-install.bash")
+		(source "${DEVICEFARM_TEST_PACKAGE_PATH}/aws-device-farm/workflows/2-pretest.bash")
+		(source "${DEVICEFARM_TEST_PACKAGE_PATH}/aws-device-farm/workflows/3-test.bash")
+		(source "${DEVICEFARM_TEST_PACKAGE_PATH}/aws-device-farm/workflows/4-posttest.bash")
+	)
+done

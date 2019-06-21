@@ -1,0 +1,6 @@
+issues:
+  exclude-rules:
+    # Comments in empty body might be useful, so it should not be prohibited.
+    - linters:
+        - staticcheck
+      text: "SA9003:"

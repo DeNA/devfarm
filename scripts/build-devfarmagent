@@ -1,0 +1,36 @@
+#!/bin/bash
+set -euo pipefail
+
+
+has() {
+	local cmd="$1"
+	type "$cmd" > /dev/null 2>&1
+}
+
+
+throw() {
+	local message="$*"
+	echo -e "$message" 1>&2
+	false
+}
+
+
+BASE_DIR="$(cd "$(dirname "$0")/.."; pwd)"
+
+
+(cd "$BASE_DIR"
+	ASSETS_DIR='./assets'
+	CMD_DIR='./cmd'
+	BINDATA_GO='./internal/pkg/assets/bindata.go'
+	NO_ASSETS_TAG="noassets"
+
+  has go-bindata || throw 'must be installed:  https://github.com/go-bindata/go-bindata'
+
+	for goos in {linux,darwin}; do
+		for goarch in amd64; do
+			GOOS="$goos" GOARCH="$goarch" go build -tags "$NO_ASSETS_TAG" -o "${ASSETS_DIR}/devfarmagent/${goos}-${goarch}/devfarmagent" "${CMD_DIR}/devfarmagent/main.go"
+		done
+	done
+
+	go-bindata -pkg assets -o "$BINDATA_GO" -tags "!${NO_ASSETS_TAG}" -ignore '(node_modules|\.gitignore)' -nometadata "${ASSETS_DIR}/..."
+)
