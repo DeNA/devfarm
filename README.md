@@ -464,7 +464,7 @@ Install
 -------
 
 ```console
-$ go get -u github.com/swet/devfarm/cmd/devfarm
+$ go get -u github.com/dena/devfarm/cmd/devfarm
 ```
 
 
