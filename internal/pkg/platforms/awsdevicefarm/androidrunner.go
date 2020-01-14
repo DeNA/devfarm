@@ -6,8 +6,13 @@ import (
 	"github.com/dena/devfarm/internal/pkg/platforms"
 )
 
-func newAndroidRunner(launchRemoteAgent remoteAgentLauncher, waitRunResult runResultWaiter) platforms.AndroidRunner {
-	return func(plan platforms.AndroidPlan, bag platforms.AndroidRunnerBag) error {
+func newAndroidRunnerWithRetry(launchRemoteAgent remoteAgentLauncher, waitRunResult runResultWaiter, retryCount int) platforms.AndroidRunner {
+	remainedRetryCount := retryCount
+
+	var runAndroid func(plan platforms.AndroidPlan, bag platforms.AndroidRunnerBag) error
+	runAndroid = func(plan platforms.AndroidPlan, bag platforms.AndroidRunnerBag) error {
+		logger := bag.GetLogger()
+
 		opts := newAndroidAgentLauncherOpts(
 			plan.AndroidSpecificPart.APK,
 			plan.AndroidSpecificPart.AppID,
@@ -26,9 +31,27 @@ func newAndroidRunner(launchRemoteAgent remoteAgentLauncher, waitRunResult runRe
 			return waitErr
 		}
 
-		if runResult != devicefarm.RunResultIsPassed {
-			return fmt.Errorf("test not passed: %q", runResult)
+		switch runResult {
+		case devicefarm.RunResultIsPassed:
+			return nil
+
+		case devicefarm.RunResultIsErrored:
+			// XXX: Retry to avoid "Failed to setup network shaper" that caused by AWS Device Farm.
+			//      These errors were happened on 25% runs.
+			if remainedRetryCount > 0 {
+				remainedRetryCount--
+				logger.Info("Retry because an error occurred (and errors does not mean test failures)")
+
+				if retryErr := runAndroid(plan, bag); retryErr != nil {
+					return retryErr
+				}
+				return nil
+			}
+			return fmt.Errorf("an error occurred (NOTE: test errors does not mean test failures): %q", runResult)
 		}
-		return nil
+
+		return fmt.Errorf("test not passed: %q", runResult)
 	}
+
+	return runAndroid
 }
