@@ -134,7 +134,7 @@ func (a awsDeviceFarm) AndroidRunner() platforms.AndroidRunner {
 	) error {
 		launchRemoteAgent := a.newRemoteAgentLauncher(bag)
 		waitRunResult := a.newRunResultWaiter(bag)
-		runnerAndroid := newAndroidRunner(launchRemoteAgent, waitRunResult)
+		runnerAndroid := newAndroidRunnerWithRetry(launchRemoteAgent, waitRunResult, 5)
 		return runnerAndroid(plan, bag)
 	}
 }
