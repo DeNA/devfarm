@@ -2,8 +2,8 @@ package awsdevicefarm
 
 import "github.com/dena/devfarm/internal/pkg/platforms"
 
-func newAndroidForever(launchRemoteAgent remoteAgentLauncher) platforms.AndroidForever {
-	return func(plan platforms.AndroidPlan, bag platforms.AndroidForeverBag) error {
+func newAndroidForever(launchRemoteAgent RemoteAgentLauncher) platforms.AndroidForever {
+	return func(plan platforms.AndroidPlan) error {
 		opts := newAndroidAgentLauncherOpts(
 			plan.AndroidSpecificPart.APK,
 			plan.AndroidSpecificPart.AppID,

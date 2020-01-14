@@ -18,15 +18,15 @@ func TestListInstances(t *testing.T) {
 	anyError := testutil.AnyError
 
 	cases := []struct {
-		platformTable map[platforms.ID]platforms.InstanceLister
-		expected      map[platforms.ID]InstancesOrError
+		table    map[platforms.ID]platforms.InstanceLister
+		expected map[platforms.ID]InstancesOrError
 	}{
 		{
-			platformTable: map[platforms.ID]platforms.InstanceLister{},
-			expected:      map[platforms.ID]InstancesOrError{},
+			table:    map[platforms.ID]platforms.InstanceLister{},
+			expected: map[platforms.ID]InstancesOrError{},
 		},
 		{
-			platformTable: map[platforms.ID]platforms.InstanceLister{
+			table: map[platforms.ID]platforms.InstanceLister{
 				examplePlatform1: platforms.StubInstanceLister(
 					[]platforms.InstanceOrError{},
 					nil,
@@ -40,7 +40,7 @@ func TestListInstances(t *testing.T) {
 			},
 		},
 		{
-			platformTable: map[platforms.ID]platforms.InstanceLister{
+			table: map[platforms.ID]platforms.InstanceLister{
 				examplePlatform1: platforms.StubInstanceLister(
 					[]platforms.InstanceOrError{
 						platforms.NewInstanceListEntry(instance1, nil),
@@ -70,7 +70,7 @@ func TestListInstances(t *testing.T) {
 			},
 		},
 		{
-			platformTable: map[platforms.ID]platforms.InstanceLister{
+			table: map[platforms.ID]platforms.InstanceLister{
 				examplePlatform1: platforms.StubInstanceLister(
 					nil,
 					anyError,
@@ -86,10 +86,16 @@ func TestListInstances(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		t.Run(fmt.Sprintf("ListInstancesOn(%v)", c.platformTable), func(t *testing.T) {
-			bag := platforms.AnyInstanceListerBag()
+		t.Run(fmt.Sprintf("ListInstancesOn(%v)", c.table), func(t *testing.T) {
+			table := make(map[platforms.ID]platforms.Platform)
+			for platformID, instanceLister := range c.table {
+				p := platforms.AnyPlatform()
+				p.InstanceListerFunc = instanceLister
+				table[platformID] = p
+			}
+			ps := Platforms{table: table}
 
-			got := listInstancesOn(c.platformTable, "ANY_GROUP", bag)
+			got := ps.ListInstances("ANY_GROUP")
 
 			if c.expected != nil {
 				if !reflect.DeepEqual(got, c.expected) {

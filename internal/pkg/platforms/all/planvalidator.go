@@ -1,25 +1,30 @@
 package all
 
 import (
+	"fmt"
 	"github.com/dena/devfarm/internal/pkg/platforms"
 	"sync"
 )
 
-func ValidatePlans(bag platforms.PlanValidatorBag, plans []platforms.EitherPlan) (ResultTable, error) {
+func (ps Platforms) ValidatePlans(plans []platforms.EitherPlan) (ResultTable, error) {
 	var wg sync.WaitGroup
 	builder := NewResultTableBuilder()
 
 	for _, plan := range plans {
-		platform, platformErr := GetPlatform(plan)
+		platform, platformErr := ps.GetPlatform(plan.Platform)
 		if platformErr != nil {
+			builder.AddErrors(plan.Platform, fmt.Errorf("no such platform: %q", plan.Platform))
 			continue
 		}
 
 		wg.Add(1)
 		go func(plan platforms.EitherPlan, platform platforms.Platform) {
 			validatePlan := platform.PlanValidator()
-			err := validatePlan(bag, plan)
-			builder.AddError(platform.ID(), err)
+			if err := validatePlan(plan); err != nil {
+				builder.AddErrors(platform.ID(), err)
+			} else {
+				builder.AddErrors(platform.ID(), nil)
+			}
 			wg.Done()
 		}(plan, platform)
 	}

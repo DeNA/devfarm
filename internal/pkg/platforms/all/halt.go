@@ -5,28 +5,17 @@ import (
 	"sync"
 )
 
-func HaltAll(groupName platforms.InstanceGroupName, bag platforms.HaltBag) (ResultTable, error) {
-	platformTable := make(map[platforms.ID]platforms.Halt, len(PlatformTable))
-
-	for _, platform := range PlatformTable {
-		platformTable[platform.ID()] = platform.Halt()
-	}
-
-	return haltAllOn(platformTable, groupName, bag)
-}
-
-// Injectable version for testing.
-func haltAllOn(platformTable map[platforms.ID]platforms.Halt, groupName platforms.InstanceGroupName, bag platforms.HaltBag) (ResultTable, error) {
+func (ps Platforms) HaltAll(groupName platforms.InstanceGroupName) (ResultTable, error) {
 	var wg sync.WaitGroup
 	builder := NewResultTableBuilder()
-	for platformID, halt := range platformTable {
+	for platformID, p := range ps.table {
 		wg.Add(1)
 
 		go func(platformID platforms.ID, halt platforms.Halt) {
 			defer wg.Done()
-			results, _ := halt(groupName, bag)
-			builder.AddError(platformID, results.ErrorsIncludingNotNil()...)
-		}(platformID, halt)
+			results, _ := halt(groupName)
+			builder.AddErrors(platformID, results.ErrorsIncludingNotNil()...)
+		}(platformID, p.Halt())
 	}
 
 	wg.Wait()

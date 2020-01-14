@@ -1,18 +1,17 @@
 package awsdevicefarm
 
 import (
-	"github.com/dena/devfarm/internal/pkg/executor/awscli"
-	"github.com/dena/devfarm/internal/pkg/executor/awscli/devicefarm"
+	"github.com/dena/devfarm/internal/pkg/exec/awscli"
+	"github.com/dena/devfarm/internal/pkg/exec/awscli/devicefarm"
+	"github.com/dena/devfarm/internal/pkg/platforms"
 )
-
-type authStatusChecker func() error
 
 func newAuthStatusChecker(
 	isInstalled awscli.InstalltionStatusGetter,
 	version awscli.VersionGetter,
 	isConfigured awscli.ConfigStatusGetter,
 	checkAuthorization devicefarm.AuthorizationStatusChecker,
-) authStatusChecker {
+) platforms.AuthStatusChecker {
 	return func() error {
 		if err := isInstalled(); err != nil {
 			return &AuthStatusReason{

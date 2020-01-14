@@ -1,8 +1,8 @@
 package awsdevicefarm
 
 import (
-	"github.com/dena/devfarm/internal/pkg/executor"
-	"github.com/dena/devfarm/internal/pkg/executor/awscli/devicefarm"
+	"github.com/dena/devfarm/internal/pkg/exec"
+	"github.com/dena/devfarm/internal/pkg/exec/awscli/devicefarm"
 	"github.com/dena/devfarm/internal/pkg/logging"
 	"testing"
 	"time"
@@ -11,7 +11,7 @@ import (
 func TestNewUploadWaiter(t *testing.T) {
 	t.Run("UploadStatus becomes: initialized -> processing -> succeeded", func(t *testing.T) {
 		logger := logging.SpySeverityLogger()
-		cond, wait := executor.StubWaiter(nil)
+		cond, wait := exec.StubWaiter(nil)
 		upload, uploadErr, uploadGetter := stubStatefulUploadGetter()
 		*upload = devicefarm.AnyUpload()
 		*uploadErr = nil
@@ -54,7 +54,7 @@ func TestNewUploadWaiter(t *testing.T) {
 
 	t.Run("UploadStatus becomes: initialized -> processing -> failed", func(t *testing.T) {
 		logger := logging.SpySeverityLogger()
-		cond, wait := executor.StubWaiter(nil)
+		cond, wait := exec.StubWaiter(nil)
 		upload, uploadErr, uploadGetter := stubStatefulUploadGetter()
 		*upload = devicefarm.AnyUpload()
 		*uploadErr = nil

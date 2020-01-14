@@ -87,8 +87,15 @@ func TestListAllInstances(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(fmt.Sprintf("ListAllInstancesOn(%v)", c.platformTable), func(t *testing.T) {
-			bag := platforms.AnyAllInstanceListerBag()
-			got := listAllInstancesOn(c.platformTable, bag)
+			table := make(map[platforms.ID]platforms.Platform)
+			for platformID, allInstanceLister := range c.platformTable {
+				p := platforms.AnyPlatform()
+				p.AllInstanceListerFunc = allInstanceLister
+				table[platformID] = p
+			}
+			ps := Platforms{table: table}
+
+			got := ps.ListAllInstances()
 
 			if c.expected != nil {
 				if !reflect.DeepEqual(got, c.expected) {

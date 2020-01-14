@@ -2,12 +2,12 @@ package awsdevicefarm
 
 import (
 	"fmt"
-	"github.com/dena/devfarm/internal/pkg/executor/awscli/devicefarm"
+	"github.com/dena/devfarm/internal/pkg/exec/awscli/devicefarm"
 	"github.com/dena/devfarm/internal/pkg/logging"
 	"github.com/dena/devfarm/internal/pkg/platforms"
 )
 
-type remoteAgentIntermediates struct {
+type RemoteAgentIntermediates struct {
 	projectARN             devicefarm.ProjectARN
 	projectARNOk           bool
 	deviceARN              devicefarm.DeviceARN
@@ -24,21 +24,21 @@ type remoteAgentIntermediates struct {
 	runARNOk               bool
 }
 
-type remoteAgentLauncher func(platforms.InstanceGroupName, remoteAgentLauncherOpts) (remoteAgentIntermediates, error)
+type RemoteAgentLauncher func(platforms.InstanceGroupName, remoteAgentLauncherOpts) (RemoteAgentIntermediates, error)
 
-func newRemoteAgentLauncher(
+func NewRemoteAgentLauncher(
 	logger logging.SeverityLogger,
-	createProjectSkipIfExists projectCreatorIfNotExists,
+	createProject projectCreator,
 	findDeviceARN deviceARNFinder,
-	createDevicePoolIfNotExists devicePoolCreatorIfNotExists,
+	createDevicePool devicePoolCreator,
 	uploadApp appUploader,
 	uploadTestPackage testPackageUploader,
 	uploadTestSpec testSpecUploader,
 	scheduleRun runScheduler,
 	waitUntilUploadIsCompleted uploadWaiter,
-) remoteAgentLauncher {
-	return func(groupName platforms.InstanceGroupName, opts remoteAgentLauncherOpts) (intermediates remoteAgentIntermediates, err error) {
-		projectARN, projectErr := createProjectSkipIfExists(groupName)
+) RemoteAgentLauncher {
+	return func(groupName platforms.InstanceGroupName, opts remoteAgentLauncherOpts) (intermediates RemoteAgentIntermediates, err error) {
+		projectARN, projectErr := createProject(groupName)
 		if projectErr != nil {
 			err = projectErr
 			return
@@ -55,7 +55,7 @@ func newRemoteAgentLauncher(
 		intermediates.deviceARN = deviceARN
 		intermediates.deviceARNOk = true
 
-		devicePoolARN, devicePoolErr := createDevicePoolIfNotExists(projectARN, deviceARN)
+		devicePoolARN, devicePoolErr := createDevicePool(projectARN, deviceARN)
 		if devicePoolErr != nil {
 			err = devicePoolErr
 			return

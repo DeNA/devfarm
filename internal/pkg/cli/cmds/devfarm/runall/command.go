@@ -29,7 +29,9 @@ func command(args []string, procInout cli.ProcessInout) cli.ExitStatus {
 		return cli.ExitAbnormal
 	}
 
-	table, runErr := all.RunAll(planFile.Plans(), bag)
+	ps := all.NewPlatforms(bag)
+
+	table, runErr := ps.RunAll(planFile.Plans())
 	if table == nil {
 		panic("result table of RunAll must be not nil")
 	}

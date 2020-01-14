@@ -1,8 +1,8 @@
 package awsdevicefarm
 
 import (
-	"github.com/dena/devfarm/internal/pkg/executor"
-	"github.com/dena/devfarm/internal/pkg/executor/awscli/devicefarm"
+	"github.com/dena/devfarm/internal/pkg/exec"
+	"github.com/dena/devfarm/internal/pkg/exec/awscli/devicefarm"
 	"github.com/dena/devfarm/internal/pkg/logging"
 	"github.com/dena/devfarm/internal/pkg/platforms"
 	"testing"
@@ -14,7 +14,7 @@ func TestNewAppUploader(t *testing.T) {
 
 	uploadApp := newAppUploader(
 		spyLogger,
-		executor.FakeFileOpener([]byte("hello world")),
+		exec.FakeFileOpener([]byte("hello world")),
 		platforms.NewCRC32Hasher(),
 		spyUploader,
 	)

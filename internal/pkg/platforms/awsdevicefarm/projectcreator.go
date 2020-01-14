@@ -2,9 +2,10 @@ package awsdevicefarm
 
 import (
 	"fmt"
+	"sync"
 	"time"
 
-	"github.com/dena/devfarm/internal/pkg/executor/awscli/devicefarm"
+	"github.com/dena/devfarm/internal/pkg/exec/awscli/devicefarm"
 	"github.com/dena/devfarm/internal/pkg/logging"
 	"github.com/dena/devfarm/internal/pkg/platforms"
 )
@@ -28,11 +29,10 @@ func newProjectCreator(logger logging.SeverityLogger, createProject devicefarm.P
 	}
 }
 
-type projectCreatorIfNotExists func(groupName platforms.InstanceGroupName) (devicefarm.ProjectARN, error)
-
-func newProjectCreatorIfNotExists(logger logging.SeverityLogger, findProject projectARNFinder, createProject projectCreator) projectCreatorIfNotExists {
+func newProjectCreatorIfNotExists(logger logging.SeverityLogger, findProject projectARNFinder, createProject projectCreator) projectCreator {
 	return func(groupName platforms.InstanceGroupName) (devicefarm.ProjectARN, error) {
-		logger.Info("searching to skip creating AWS Device Farm projects")
+		logger.Info(fmt.Sprintf("searching AWS Device Farm project: %q", groupName))
+
 		projectARN, findErr := findProject(groupName)
 
 		if findErr != nil {
@@ -42,7 +42,29 @@ func newProjectCreatorIfNotExists(logger logging.SeverityLogger, findProject pro
 			return "", findErr
 		}
 
-		logger.Info("skipped to create an AWS Device Farm project (because the project already exists)")
+		logger.Info(fmt.Sprintf("skipped creating an AWS Device Farm project (because the project already exists): %q", groupName))
+		return projectARN, nil
+	}
+}
+
+func newProjectCreatorCached(createProject projectCreator) projectCreator {
+	var mu sync.Mutex
+	cache := make(map[platforms.InstanceGroupName]devicefarm.ProjectARN)
+
+	return func(groupName platforms.InstanceGroupName) (devicefarm.ProjectARN, error) {
+		mu.Lock()
+		defer mu.Unlock()
+
+		if cached, ok := cache[groupName]; ok {
+			return cached, nil
+		}
+
+		projectARN, err := createProject(groupName)
+		if err != nil {
+			return "", err
+		}
+
+		cache[groupName] = projectARN
 		return projectARN, nil
 	}
 }

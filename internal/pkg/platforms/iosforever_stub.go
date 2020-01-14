@@ -8,7 +8,7 @@ func AnyIOSForever() IOSForever {
 	return FailedIOSForever()
 }
 
-func SuccessfulIOSLauncher() IOSForever {
+func SuccessfulIOSForever() IOSForever {
 	return StubIOSForever(nil)
 }
 
@@ -17,11 +17,7 @@ func FailedIOSForever() IOSForever {
 }
 
 func StubIOSForever(err error) IOSForever {
-	return func(IOSPlan, IOSForeverBag) error {
+	return func(IOSPlan) error {
 		return err
 	}
-}
-
-func AnyIOSForeverBag() IOSForeverBag {
-	return AnyBag()
 }

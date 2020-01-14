@@ -85,7 +85,7 @@ func (t *ResultTableBuilder) Build() ResultTable {
 	return table
 }
 
-func (t *ResultTableBuilder) AddError(platformID platforms.ID, errors ...error) {
+func (t *ResultTableBuilder) AddErrors(platformID platforms.ID, errors ...error) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 	results, ok := t.mutTable[platformID]
@@ -93,5 +93,16 @@ func (t *ResultTableBuilder) AddError(platformID platforms.ID, errors ...error) 
 		results = platforms.NewResults()
 		t.mutTable[platformID] = results
 	}
-	results.AddError(errors...)
+	results.AddErrorOrNils(errors...)
+}
+
+func (t *ResultTableBuilder) AddSuccesses(platformID platforms.ID, delta int) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	results, ok := t.mutTable[platformID]
+	if !ok {
+		results = platforms.NewResults()
+		t.mutTable[platformID] = results
+	}
+	results.AddSuccesses(delta)
 }

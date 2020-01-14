@@ -2,25 +2,23 @@ package awsdevicefarm
 
 import (
 	"fmt"
-	"github.com/dena/devfarm/internal/pkg/executor/awscli/devicefarm"
+	"github.com/dena/devfarm/internal/pkg/exec/awscli/devicefarm"
 	"github.com/dena/devfarm/internal/pkg/platforms"
 )
 
-type appHalt func(groupName platforms.InstanceGroupName) (platforms.Results, error)
-
-func newAppHalt(findProjectARN projectARNFinder, listRuns devicefarm.RunLister, stopRun devicefarm.RunStopper) appHalt {
+func newAppHalt(findProjectARN projectARNFinder, listRuns devicefarm.RunLister, stopRun devicefarm.RunStopper) platforms.Halt {
 	return func(groupName platforms.InstanceGroupName) (platforms.Results, error) {
 		results := platforms.NewResults()
 
 		projectARN, projectARNErr := findProjectARN(groupName)
 		if projectARNErr != nil {
-			results.AddError(projectARNErr)
+			results.AddErrorOrNils(projectARNErr)
 			return *results, results.Err()
 		}
 
 		runs, runsErr := listRuns(projectARN)
 		if runsErr != nil {
-			results.AddError(runsErr)
+			results.AddErrorOrNils(runsErr)
 			return *results, results.Err()
 		}
 
@@ -39,9 +37,9 @@ func newAppHalt(findProjectARN projectARNFinder, listRuns devicefarm.RunLister, 
 				err := stopRun(run.ARN)
 
 				if err != nil {
-					results.AddError(fmt.Errorf("%s: %s", err.Error(), run.ARN))
+					results.AddErrorOrNils(fmt.Errorf("%s: %s", err.Error(), run.ARN))
 				} else {
-					results.AddSuccess(1)
+					results.AddSuccesses(1)
 				}
 			}
 		}

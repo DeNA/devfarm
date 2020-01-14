@@ -2,8 +2,8 @@ package all
 
 import (
 	"fmt"
-	"github.com/google/go-cmp/cmp"
 	"github.com/dena/devfarm/internal/pkg/platforms"
+	"github.com/google/go-cmp/cmp"
 	"reflect"
 	"testing"
 )
@@ -13,15 +13,15 @@ func TestHaltAll(t *testing.T) {
 	var examplePlatform2 platforms.ID = "example2"
 
 	cases := []struct {
-		platformTable map[platforms.ID]platforms.Halt
-		expected      ResultTable
+		table    map[platforms.ID]platforms.Halt
+		expected ResultTable
 	}{
 		{
-			platformTable: map[platforms.ID]platforms.Halt{},
-			expected:      ResultTable{},
+			table:    map[platforms.ID]platforms.Halt{},
+			expected: ResultTable{},
 		},
 		{
-			platformTable: map[platforms.ID]platforms.Halt{
+			table: map[platforms.ID]platforms.Halt{
 				examplePlatform1: platforms.StubHalt([]error{}),
 			},
 			expected: ResultTable{
@@ -29,7 +29,7 @@ func TestHaltAll(t *testing.T) {
 			},
 		},
 		{
-			platformTable: map[platforms.ID]platforms.Halt{
+			table: map[platforms.ID]platforms.Halt{
 				examplePlatform1: platforms.StubHalt([]error{nil}),
 			},
 			expected: ResultTable{
@@ -37,7 +37,7 @@ func TestHaltAll(t *testing.T) {
 			},
 		},
 		{
-			platformTable: map[platforms.ID]platforms.Halt{
+			table: map[platforms.ID]platforms.Halt{
 				examplePlatform1: platforms.StubHalt([]error{Error1{}, Error2{}}),
 				examplePlatform2: platforms.StubHalt([]error{}),
 			},
@@ -47,7 +47,7 @@ func TestHaltAll(t *testing.T) {
 			},
 		},
 		{
-			platformTable: map[platforms.ID]platforms.Halt{
+			table: map[platforms.ID]platforms.Halt{
 				examplePlatform1: platforms.StubHalt([]error{Error1{}}),
 				examplePlatform2: platforms.StubHalt([]error{Error2{}}),
 			},
@@ -59,11 +59,17 @@ func TestHaltAll(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		t.Run(fmt.Sprintf("HaltAllOn(%v)", c.platformTable), func(t *testing.T) {
-			bag := platforms.AnyBag()
+		t.Run(fmt.Sprintf("HaltAllOn(%v)", c.table), func(t *testing.T) {
 			groupName := platforms.InstanceGroupName("ANY_GROUP")
+			table := make(map[platforms.ID]platforms.Platform)
+			for platformID, halt := range c.table {
+				p := platforms.AnyPlatform()
+				p.HaltFunc = halt
+				table[platformID] = p
+			}
+			ps := Platforms{table: table}
 
-			got, _ := haltAllOn(c.platformTable, groupName, bag)
+			got, _ := ps.HaltAll(groupName)
 
 			if !reflect.DeepEqual(got, c.expected) {
 				t.Error(cmp.Diff(c.expected, got))

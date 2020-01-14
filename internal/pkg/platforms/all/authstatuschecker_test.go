@@ -11,8 +11,8 @@ import (
 func TestCheckAuthStatusOn(t *testing.T) {
 	var examplePlatform1 platforms.ID = "example1"
 	var examplePlatform2 platforms.ID = "example2"
-	var successfulChecker = func(_ platforms.AuthStatusCheckerBag) error { return nil }
-	var failedChecker = func(_ platforms.AuthStatusCheckerBag) error { return testutil.AnyError }
+	var successfulChecker = func() error { return nil }
+	var failedChecker = func() error { return testutil.AnyError }
 
 	cases := []struct {
 		checkers map[platforms.ID]platforms.AuthStatusChecker
@@ -48,11 +48,17 @@ func TestCheckAuthStatusOn(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(fmt.Sprintf("CheckAuthStatusOn(%#v)", c.checkers), func(t *testing.T) {
-			bag := platforms.AnyAuthStatusCheckerBag()
-			statusTable := CheckAuthStatusOn(c.checkers, bag)
+			table := make(map[platforms.ID]platforms.Platform)
+			for platformID, checker := range c.checkers {
+				p := platforms.AnyPlatform()
+				p.AuthStatusCheckerFunc = checker
+				table[platformID] = p
+			}
+			ps := Platforms{table: table}
+
+			statusTable := ps.CheckAllAuthStatus()
 
 			got := errorTableToBoolTable(statusTable)
-
 			if !reflect.DeepEqual(got, c.expected) {
 				t.Errorf("got %v, want %v", got, c.expected)
 			}

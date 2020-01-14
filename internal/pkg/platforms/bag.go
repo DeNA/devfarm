@@ -1,56 +1,56 @@
 package platforms
 
 import (
-	"github.com/dena/devfarm/internal/pkg/executor"
+	"github.com/dena/devfarm/internal/pkg/exec"
 	"github.com/dena/devfarm/internal/pkg/logging"
 )
 
 type Bag struct {
 	logger              logging.SeverityLogger
-	executor            executor.Executor
-	interactiveExecutor executor.InteractiveExecutor
-	finder              executor.ExecutableFinder
-	uploader            executor.Uploader
-	fileOpener          executor.FileOpener
-	envGetter           executor.EnvGetter
+	executor            exec.Executor
+	interactiveExecutor exec.InteractiveExecutor
+	finder              exec.ExecutableFinder
+	uploader            exec.Uploader
+	fileOpener          exec.FileOpener
+	envGetter           exec.EnvGetter
 }
 
 func (bag Bag) GetLogger() logging.SeverityLogger {
 	return bag.logger
 }
 
-func (bag Bag) GetExecutor() executor.Executor {
+func (bag Bag) GetExecutor() exec.Executor {
 	return bag.executor
 }
 
-func (bag Bag) GetInteractiveExecutor() executor.InteractiveExecutor {
+func (bag Bag) GetInteractiveExecutor() exec.InteractiveExecutor {
 	return bag.interactiveExecutor
 }
 
-func (bag Bag) GetFinder() executor.ExecutableFinder {
+func (bag Bag) GetFinder() exec.ExecutableFinder {
 	return bag.finder
 }
 
-func (bag Bag) GetUploader() executor.Uploader {
+func (bag Bag) GetUploader() exec.Uploader {
 	return bag.uploader
 }
 
-func (bag Bag) GetFileOpener() executor.FileOpener {
+func (bag Bag) GetFileOpener() exec.FileOpener {
 	return bag.fileOpener
 }
 
-func (bag Bag) GetEnvGetter() executor.EnvGetter {
+func (bag Bag) GetEnvGetter() exec.EnvGetter {
 	return bag.envGetter
 }
 
 func NewBag(
 	logger logging.SeverityLogger,
-	executor executor.Executor,
-	interactiveExecutor executor.InteractiveExecutor,
-	finder executor.ExecutableFinder,
-	uploader executor.Uploader,
-	fileOpener executor.FileOpener,
-	envGetter executor.EnvGetter,
+	executor exec.Executor,
+	interactiveExecutor exec.InteractiveExecutor,
+	finder exec.ExecutableFinder,
+	uploader exec.Uploader,
+	fileOpener exec.FileOpener,
+	envGetter exec.EnvGetter,
 ) Bag {
 	return Bag{
 		logger:              logger,
@@ -62,8 +62,3 @@ func NewBag(
 		envGetter:           envGetter,
 	}
 }
-
-var _ IOSForeverBag = Bag{}
-var _ AndroidForeverBag = Bag{}
-var _ IOSRunnerBag = Bag{}
-var _ AndroidRunnerBag = Bag{}

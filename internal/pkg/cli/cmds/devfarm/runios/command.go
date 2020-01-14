@@ -32,7 +32,8 @@ func command(args []string, procInout cli.ProcessInout) cli.ExitStatus {
 		platforms.LocationHintForCLIArguments,
 	)
 
-	runningErr := all.RunIOS(plan, bag)
+	ps := all.NewPlatforms(bag)
+	runningErr := ps.RunIOS(plan)
 
 	if _, err := fmt.Fprint(procInout.Stdout, formatter.PrettyTSV(format(opts.platformID, runningErr))); err != nil {
 		return cli.ExitAbnormal

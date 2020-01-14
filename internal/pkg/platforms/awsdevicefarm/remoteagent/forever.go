@@ -2,9 +2,9 @@ package remoteagent
 
 import (
 	"fmt"
-	"github.com/dena/devfarm/internal/pkg/executor"
-	"github.com/dena/devfarm/internal/pkg/executor/adb"
-	"github.com/dena/devfarm/internal/pkg/executor/iosdeploy"
+	"github.com/dena/devfarm/internal/pkg/exec"
+	"github.com/dena/devfarm/internal/pkg/exec/adb"
+	"github.com/dena/devfarm/internal/pkg/exec/iosdeploy"
 	"github.com/dena/devfarm/internal/pkg/logging"
 	"github.com/dena/devfarm/internal/pkg/platforms"
 )
@@ -13,9 +13,9 @@ type Forever func() error
 
 type ForeverBag interface {
 	GetLogger() logging.SeverityLogger
-	GetEnvGetter() executor.EnvGetter
-	GetFinder() executor.ExecutableFinder
-	GetExecutor() executor.Executor
+	GetEnvGetter() exec.EnvGetter
+	GetFinder() exec.ExecutableFinder
+	GetExecutor() exec.Executor
 }
 
 func NewForever(bag ForeverBag) Forever {
@@ -64,7 +64,7 @@ func NewForever(bag ForeverBag) Forever {
 				bag.GetLogger(),
 				packageName,
 				adb.NewSerialNumberGetter(adbCmd),
-				adb.NewWaitUntilBecomeReady(adb.NewReadyDetector(getProp), executor.NewWaiter()),
+				adb.NewWaitUntilBecomeReady(adb.NewReadyDetector(getProp), exec.NewWaiter()),
 				adb.NewMainIntentFinder(adbCmd),
 				adb.NewActivityStarter(adbCmd),
 				adb.NewPIDGetter(adbCmd),

@@ -3,8 +3,8 @@ package awsdevicefarm
 import (
 	"errors"
 	"fmt"
-	"github.com/dena/devfarm/internal/pkg/executor"
-	"github.com/dena/devfarm/internal/pkg/executor/awscli/devicefarm"
+	"github.com/dena/devfarm/internal/pkg/exec"
+	"github.com/dena/devfarm/internal/pkg/exec/awscli/devicefarm"
 	"github.com/dena/devfarm/internal/pkg/logging"
 	"io"
 	"net/http"
@@ -106,7 +106,7 @@ func newReserveAndUploaderIfNotExists(
 
 type retryingUploader func(url string, modifyRequest func(*http.Request), reader io.Reader) error
 
-func newRetryingUploader(logger logging.SeverityLogger, uploader executor.Uploader, maxRetryCount int) retryingUploader {
+func newRetryingUploader(logger logging.SeverityLogger, uploader exec.Uploader, maxRetryCount int) retryingUploader {
 	return func(url string, modifyRequest func(*http.Request), reader io.Reader) error {
 		remainedRetryCount := maxRetryCount
 

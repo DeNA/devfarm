@@ -1,16 +1,5 @@
 package platforms
 
-import (
-	"github.com/dena/devfarm/internal/pkg/executor"
-	"github.com/dena/devfarm/internal/pkg/logging"
-)
-
-type InstanceGroupListerBag interface {
-	GetLogger() logging.SeverityLogger
-	GetExecutor() executor.Executor
-	GetFinder() executor.ExecutableFinder
-}
-
 type InstanceGroupListEntry struct {
 	Group      InstanceGroup
 	GroupError error
@@ -39,4 +28,4 @@ func NewInstanceGroupListEntry(group InstanceGroup, err error) InstanceGroupList
 	}
 }
 
-type InstanceGroupLister func(bag InstanceGroupListerBag) ([]InstanceGroupListEntry, error)
+type InstanceGroupLister func() ([]InstanceGroupListEntry, error)

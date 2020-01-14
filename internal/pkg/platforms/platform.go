@@ -7,6 +7,8 @@ type Platform interface {
 	InstanceLister() InstanceLister
 	AllInstanceLister() AllInstanceLister
 	InstanceGroupLister() InstanceGroupLister
+	Forever() Forever
+	Runner() Runner
 	IOSForever() IOSForever
 	IOSRunner() IOSRunner
 	AndroidForever() AndroidForever

@@ -1,7 +1,7 @@
 package awsdevicefarm
 
 import (
-	"github.com/dena/devfarm/internal/pkg/executor/awscli/devicefarm"
+	"github.com/dena/devfarm/internal/pkg/exec/awscli/devicefarm"
 	"github.com/dena/devfarm/internal/pkg/platforms"
 	"time"
 )

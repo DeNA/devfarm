@@ -2,7 +2,7 @@ package remoteagent
 
 import (
 	"fmt"
-	"github.com/dena/devfarm/internal/pkg/executor/adb"
+	"github.com/dena/devfarm/internal/pkg/exec/adb"
 	"github.com/dena/devfarm/internal/pkg/logging"
 	"github.com/dena/devfarm/internal/pkg/platforms"
 	"time"

@@ -1,16 +1,5 @@
 package platforms
 
-import (
-	"github.com/dena/devfarm/internal/pkg/executor"
-	"github.com/dena/devfarm/internal/pkg/logging"
-)
-
-type DevicesListerBag interface {
-	GetLogger() logging.SeverityLogger
-	GetExecutor() executor.Executor
-	GetFinder() executor.ExecutableFinder
-}
-
 func NewDeviceListEntry(iosOrAndroidDevices EitherDevice, err error) DeviceOrError {
 	return DeviceOrError{
 		Device: iosOrAndroidDevices,
@@ -46,4 +35,4 @@ func (entry DeviceOrError) Less(another DeviceOrError) bool {
 	return entry.Error.Error() < another.Error.Error()
 }
 
-type DeviceLister func(bag DevicesListerBag) ([]DeviceOrError, error)
+type DeviceLister func() ([]DeviceOrError, error)

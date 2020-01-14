@@ -3,14 +3,14 @@ package awsdevicefarm
 import (
 	"context"
 	"fmt"
-	"github.com/dena/devfarm/internal/pkg/executor/awscli/devicefarm"
+	"github.com/dena/devfarm/internal/pkg/exec/awscli/devicefarm"
 	"github.com/dena/devfarm/internal/pkg/logging"
 	"time"
 )
 
-type runResultWaiter func(arn devicefarm.RunARN) (devicefarm.RunResult, error)
+type RunResultWaiter func(arn devicefarm.RunARN) (devicefarm.RunResult, error)
 
-func newRunResultWaiter(logger logging.SeverityLogger, getRun devicefarm.RunGetter, pollingInterval time.Duration, timeout time.Duration) runResultWaiter {
+func NewRunResultWaiter(logger logging.SeverityLogger, getRun devicefarm.RunGetter, pollingInterval time.Duration, timeout time.Duration) RunResultWaiter {
 	return func(runARN devicefarm.RunARN) (devicefarm.RunResult, error) {
 		logger.Info("waiting until the AWS Device Farm test result became ready")
 		ctx, cancel := context.WithTimeout(context.Background(), timeout)

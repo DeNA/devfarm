@@ -1,13 +1,11 @@
 package awsdevicefarm
 
 import (
-	"github.com/dena/devfarm/internal/pkg/executor/awscli/devicefarm"
+	"github.com/dena/devfarm/internal/pkg/exec/awscli/devicefarm"
 	"github.com/dena/devfarm/internal/pkg/platforms"
 )
 
-type deviceEntryLister func() ([]platforms.DeviceOrError, error)
-
-func newDeviceEntryLister(listDevices devicefarm.DeviceLister) deviceEntryLister {
+func newDeviceEntryLister(listDevices devicefarm.DeviceLister) platforms.DeviceLister {
 	return func() ([]platforms.DeviceOrError, error) {
 		devices, err := listDevices()
 		if err != nil {

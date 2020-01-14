@@ -22,12 +22,13 @@ func Command(args []string, procInout cli.ProcessInout) cli.ExitStatus {
 	}
 
 	bag := cli.ComposeBag(procInout, opts.verbose, opts.dryRun)
+	ps := all.NewPlatforms(bag)
 
 	var instanceTable map[platforms.ID]all.InstancesOrError
 	if opts.shouldGetFromAllGroups {
-		instanceTable = all.ListAllInstances(bag)
+		instanceTable = ps.ListAllInstances()
 	} else {
-		instanceTable = all.ListInstances(opts.instanceGroupName, bag)
+		instanceTable = ps.ListInstances(opts.instanceGroupName)
 	}
 
 	textTable := format(all.PlatformInstanceEntryFromTable(instanceTable))

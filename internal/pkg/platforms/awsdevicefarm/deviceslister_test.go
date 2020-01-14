@@ -2,9 +2,9 @@ package awsdevicefarm
 
 import (
 	"fmt"
-	"github.com/google/go-cmp/cmp"
-	"github.com/dena/devfarm/internal/pkg/executor/awscli/devicefarm"
+	"github.com/dena/devfarm/internal/pkg/exec/awscli/devicefarm"
 	"github.com/dena/devfarm/internal/pkg/platforms"
+	"github.com/google/go-cmp/cmp"
 	"reflect"
 	"testing"
 )

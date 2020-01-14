@@ -6,7 +6,7 @@ import (
 	"github.com/dena/devfarm/internal/pkg/cli"
 	"github.com/dena/devfarm/internal/pkg/cli/planfile"
 	"github.com/dena/devfarm/internal/pkg/cli/subcmd"
-	"github.com/dena/devfarm/internal/pkg/executor"
+	"github.com/dena/devfarm/internal/pkg/exec"
 	"os"
 	"path"
 )
@@ -24,7 +24,7 @@ func command(args []string, procInout cli.ProcessInout) cli.ExitStatus {
 	}
 
 	logger := cli.NewLogger(opts.verbose, procInout.Stderr)
-	opener := executor.NewFileOpener(logger, opts.dryRun)
+	opener := exec.NewFileOpener(logger, opts.dryRun)
 
 	template := *planfile.NewTemplate()
 	if err := planfile.Write(template, opts.filePath, opener); err != nil {

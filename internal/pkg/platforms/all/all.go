@@ -5,24 +5,31 @@ import (
 	"github.com/dena/devfarm/internal/pkg/platforms"
 	"github.com/dena/devfarm/internal/pkg/platforms/awsdevicefarm"
 	"sort"
+	"strings"
 )
 
-var PlatformTable = map[platforms.ID]platforms.Platform{
-	awsdevicefarm.ID: awsdevicefarm.AWSDeviceFarm,
+type Platforms struct {
+	table map[platforms.ID]platforms.Platform
 }
 
-func GetPlatform(plan platforms.EitherPlan) (platforms.Platform, error) {
-	if platform, ok := PlatformTable[plan.CommonPart.Platform]; ok {
-		return platform, nil
+func NewPlatforms(bag platforms.Bag) Platforms {
+	return Platforms{table: map[platforms.ID]platforms.Platform{
+		awsdevicefarm.ID: awsdevicefarm.NewPlatform(bag),
+	}}
+}
+
+func (ps Platforms) GetPlatform(id platforms.ID) (platforms.Platform, error) {
+	if p, ok := ps.table[id]; ok {
+		return p, nil
 	}
-	return nil, fmt.Errorf("no such platform: %q", plan.CommonPart.Platform)
+	return nil, fmt.Errorf("no such platform: %q (available ones are %s)", id, strings.Join(ps.PlatformNames(), ", "))
 }
 
-func PlatformNames() []string {
-	result := make([]string, len(PlatformTable))
+func (ps Platforms) PlatformNames() []string {
+	result := make([]string, len(ps.table))
 
 	i := 0
-	for platformID := range PlatformTable {
+	for platformID := range ps.table {
 		result[i] = string(platformID)
 		i++
 	}
@@ -33,11 +40,11 @@ func PlatformNames() []string {
 	return result
 }
 
-func PlatformIDs() []platforms.ID {
-	result := make([]platforms.ID, len(PlatformTable))
+func (ps Platforms) PlatformIDs() []platforms.ID {
+	result := make([]platforms.ID, len(ps.table))
 
 	i := 0
-	for platformID := range PlatformTable {
+	for platformID := range ps.table {
 		result[i] = platformID
 		i++
 	}

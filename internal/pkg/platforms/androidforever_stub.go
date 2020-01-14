@@ -17,11 +17,7 @@ func FailedAndroidForever() AndroidForever {
 }
 
 func StubAndroidForever(err error) AndroidForever {
-	return func(AndroidPlan, AndroidForeverBag) error {
+	return func(AndroidPlan) error {
 		return err
 	}
-}
-
-func AnyAndroidForeverBag() AndroidForeverBag {
-	return AnyBag()
 }
