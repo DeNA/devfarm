@@ -5,7 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/dena/devfarm/internal/pkg/executor/adb"
+	"github.com/dena/devfarm/internal/pkg/exec/adb"
 	"github.com/dena/devfarm/internal/pkg/logging"
 	"io"
 	"strings"

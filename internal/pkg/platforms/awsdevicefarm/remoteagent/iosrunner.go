@@ -3,7 +3,7 @@ package remoteagent
 import (
 	"context"
 	"fmt"
-	"github.com/dena/devfarm/internal/pkg/executor/iosdeploy"
+	"github.com/dena/devfarm/internal/pkg/exec/iosdeploy"
 	"github.com/dena/devfarm/internal/pkg/logging"
 	"github.com/dena/devfarm/internal/pkg/platforms"
 	"time"

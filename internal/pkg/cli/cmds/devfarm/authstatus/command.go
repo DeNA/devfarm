@@ -21,8 +21,9 @@ func Command(args []string, procInout cli.ProcessInout) cli.ExitStatus {
 	}
 
 	bag := cli.ComposeBag(procInout, opts.Verbose, opts.DryRun)
+	ps := all.NewPlatforms(bag)
 
-	authStatusTable := all.CheckAllAuthStatus(bag)
+	authStatusTable := ps.CheckAllAuthStatus()
 
 	result := FormatAuthStatusTable(authStatusTable)
 

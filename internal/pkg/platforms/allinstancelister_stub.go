@@ -9,11 +9,7 @@ func AnyAllInstanceLister() AllInstanceLister {
 }
 
 func StubAllInstanceLister(entries []InstanceOrError, err error) AllInstanceLister {
-	return func(AllInstanceListerBag) ([]InstanceOrError, error) {
+	return func() ([]InstanceOrError, error) {
 		return entries, err
 	}
-}
-
-func AnyAllInstanceListerBag() AllInstanceListerBag {
-	return AnyBag()
 }

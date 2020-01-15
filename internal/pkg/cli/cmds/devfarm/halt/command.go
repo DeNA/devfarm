@@ -22,8 +22,9 @@ func Command(args []string, procInout cli.ProcessInout) cli.ExitStatus {
 	}
 
 	bag := cli.ComposeBag(procInout, opts.verbose, opts.dryRun)
+	ps := all.NewPlatforms(bag)
 
-	table, haltErr := all.HaltAll(opts.instanceGroupName, bag)
+	table, haltErr := ps.HaltAll(opts.instanceGroupName)
 
 	successMsg := "halting"
 	if _, err := fmt.Fprint(procInout.Stdout, formatter.PrettyTSV(table.TextTable(successMsg))); err != nil {

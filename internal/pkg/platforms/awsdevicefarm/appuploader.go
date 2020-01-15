@@ -2,12 +2,13 @@ package awsdevicefarm
 
 import (
 	"fmt"
-	"github.com/dena/devfarm/internal/pkg/executor"
-	"github.com/dena/devfarm/internal/pkg/executor/awscli/devicefarm"
+	"github.com/dena/devfarm/internal/pkg/exec"
+	"github.com/dena/devfarm/internal/pkg/exec/awscli/devicefarm"
 	"github.com/dena/devfarm/internal/pkg/logging"
 	"github.com/dena/devfarm/internal/pkg/platforms"
 	"io"
 	"os"
+	"sync"
 )
 
 type appUpload struct {
@@ -18,7 +19,7 @@ type ipaOrApkPathOnLocal string
 
 type appUploader func(appPath ipaOrApkPathOnLocal, osName platforms.OSName, projectARN devicefarm.ProjectARN) (appUpload, error)
 
-func newAppUploader(logger logging.SeverityLogger, openFile executor.FileOpener, hash platforms.Hasher32, reserveAndUploadIfNotExists reserveAndUploaderIfNotExists) appUploader {
+func newAppUploader(logger logging.SeverityLogger, openFile exec.FileOpener, hash platforms.Hasher32, reserveAndUploadIfNotExists reserveAndUploaderIfNotExists) appUploader {
 	return func(appPath ipaOrApkPathOnLocal, osName platforms.OSName, projectARN devicefarm.ProjectARN) (appUpload, error) {
 		logger.Info(fmt.Sprintf("validating the app to upload to AWS Device Farm: %q", appPath))
 
@@ -74,4 +75,38 @@ func newAppUploader(logger logging.SeverityLogger, openFile executor.FileOpener,
 
 		return appUpload{uploadARN}, nil
 	}
+}
+
+func newAppUploaderCached(uploadApp appUploader) appUploader {
+	var mu sync.Mutex
+	cache := make(map[appPathAndOSNameAndProjectARN]appUpload)
+
+	return func(appPath ipaOrApkPathOnLocal, osName platforms.OSName, projectARN devicefarm.ProjectARN) (appUpload, error) {
+		mu.Lock()
+		defer mu.Unlock()
+
+		key := appPathAndOSNameAndProjectARN{
+			appPath:    appPath,
+			osName:     osName,
+			projectARN: projectARN,
+		}
+
+		if cached, ok := cache[key]; ok {
+			return cached, nil
+		}
+
+		uploadARN, err := uploadApp(appPath, osName, projectARN)
+		if err != nil {
+			return appUpload{}, err
+		}
+
+		cache[key] = uploadARN
+		return uploadARN, nil
+	}
+}
+
+type appPathAndOSNameAndProjectARN struct {
+	appPath    ipaOrApkPathOnLocal
+	osName     platforms.OSName
+	projectARN devicefarm.ProjectARN
 }

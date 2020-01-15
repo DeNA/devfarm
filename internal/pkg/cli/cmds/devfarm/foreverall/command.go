@@ -29,7 +29,8 @@ func Command(args []string, procInout cli.ProcessInout) cli.ExitStatus {
 		return cli.ExitAbnormal
 	}
 
-	table, foreverErr := all.ForeverAll(planFile.Plans(), bag)
+	ps := all.NewPlatforms(bag)
+	table, foreverErr := ps.Forever(planFile.Plans())
 
 	successMsg := "launching"
 	if _, err := fmt.Fprint(procInout.Stdout, formatter.PrettyTSV(table.TextTable(successMsg))); err != nil {

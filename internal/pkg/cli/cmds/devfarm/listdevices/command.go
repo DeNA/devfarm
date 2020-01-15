@@ -21,8 +21,9 @@ func Command(args []string, procInout cli.ProcessInout) cli.ExitStatus {
 	}
 
 	bag := cli.ComposeBag(procInout, opts.Verbose, opts.DryRun)
+	ps := all.NewPlatforms(bag)
 
-	table := all.ListAllDevices(bag)
+	table := ps.ListAllDevices()
 	entries := all.DeviceListEntries(table)
 	textTable := format(entries)
 

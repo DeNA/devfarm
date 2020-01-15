@@ -4,15 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dena/devfarm/internal/pkg/cli/formatter"
-	"github.com/dena/devfarm/internal/pkg/executor/awscli/devicefarm"
+	"github.com/dena/devfarm/internal/pkg/exec/awscli/devicefarm"
 	"github.com/dena/devfarm/internal/pkg/logging"
 	"github.com/dena/devfarm/internal/pkg/platforms"
 	"sort"
+	"sync"
 )
 
-type deviceFinder func(platforms.EitherDevice) (bool, error)
-
-func newDeviceFinder(listDevices devicefarm.DeviceLister) deviceFinder {
+func newDeviceFinder(listDevices devicefarm.DeviceLister) platforms.DeviceFinder {
 	return func(iosOrAndroidDevice platforms.EitherDevice) (bool, error) {
 		devices, devicesErr := listDevices()
 		if devicesErr != nil {
@@ -66,6 +65,28 @@ func newDeviceARNFinder(logger logging.SeverityLogger, listDevices devicefarm.De
 		return "", &deviceARNFinderError{
 			NotFound: errors.New(message),
 		}
+	}
+}
+
+func newDeviceARNFinderCached(findDeviceARN deviceARNFinder) deviceARNFinder {
+	var mu sync.Mutex
+	cache := make(map[platforms.EitherDevice]devicefarm.DeviceARN)
+
+	return func(device platforms.EitherDevice) (devicefarm.DeviceARN, *deviceARNFinderError) {
+		mu.Lock()
+		defer mu.Unlock()
+
+		if cached, ok := cache[device]; ok {
+			return cached, nil
+		}
+
+		deviceARN, err := findDeviceARN(device)
+		if err != nil {
+			return "", err
+		}
+
+		cache[device] = deviceARN
+		return deviceARN, nil
 	}
 }
 

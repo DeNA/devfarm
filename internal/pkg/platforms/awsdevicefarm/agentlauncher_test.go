@@ -7,11 +7,11 @@ import (
 )
 
 func TestNewRemoteAgentLauncher(t *testing.T) {
-	launchAgent := newRemoteAgentLauncher(
+	launchAgent := NewRemoteAgentLauncher(
 		logging.NullSeverityLogger(),
-		anySuccessfulProjectCreatorSkipIfExists(),
+		anySuccessfulProjectCreator(),
 		anySuccessfulDeviceARNFinder(),
-		anySuccessfulDevicePoolCreatorIfNotExists(),
+		anySuccessfulDevicePoolCreator(),
 		anySuccessfulAppUploader(),
 		anySuccessfulTestPackageUploader(),
 		anySuccessfulSpecUploader(),

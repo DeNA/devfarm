@@ -1,7 +1,7 @@
 package awsdevicefarm
 
 import (
-	"github.com/dena/devfarm/internal/pkg/executor/awscli/devicefarm"
+	"github.com/dena/devfarm/internal/pkg/exec/awscli/devicefarm"
 	"github.com/dena/devfarm/internal/pkg/logging"
 	"testing"
 	"time"
@@ -13,7 +13,7 @@ func TestNewRunResultWaiter(t *testing.T) {
 		runResult := devicefarm.RunResultIsPending
 
 		// FIXME: Hard to understand what doing...
-		waitRunResult := newRunResultWaiter(logger, func(devicefarm.RunARN) (devicefarm.Run, error) {
+		waitRunResult := NewRunResultWaiter(logger, func(devicefarm.RunARN) (devicefarm.Run, error) {
 			return devicefarm.Run{Result: runResult}, nil
 		}, time.Millisecond*10, time.Second*100)
 
@@ -41,7 +41,7 @@ func TestNewRunResultWaiter(t *testing.T) {
 		runResult := devicefarm.RunResultIsPending
 
 		// FIXME: Hard to understand what doing...
-		waitRunResult := newRunResultWaiter(logger, func(devicefarm.RunARN) (devicefarm.Run, error) {
+		waitRunResult := NewRunResultWaiter(logger, func(devicefarm.RunARN) (devicefarm.Run, error) {
 			return devicefarm.Run{Result: runResult}, nil
 		}, time.Millisecond*10, time.Second*100)
 

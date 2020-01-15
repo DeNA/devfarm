@@ -2,8 +2,9 @@ package awsdevicefarm
 
 import (
 	"fmt"
-	"github.com/dena/devfarm/internal/pkg/executor/awscli/devicefarm"
+	"github.com/dena/devfarm/internal/pkg/exec/awscli/devicefarm"
 	"github.com/dena/devfarm/internal/pkg/logging"
+	"sync"
 )
 
 func devicePoolName(deviceARN devicefarm.DeviceARN) string {
@@ -35,9 +36,7 @@ func newDevicePoolCreator(logger logging.SeverityLogger, createDevicePool device
 	}
 }
 
-type devicePoolCreatorIfNotExists func(projectARN devicefarm.ProjectARN, deviceARN devicefarm.DeviceARN) (devicefarm.DevicePoolARN, error)
-
-func newDevicePoolCreatorIfNotExists(logger logging.SeverityLogger, findDevicePoolARN devicePoolARNFinder, createDevicePool devicePoolCreator) devicePoolCreatorIfNotExists {
+func newDevicePoolCreatorIfNotExists(logger logging.SeverityLogger, findDevicePoolARN devicePoolARNFinder, createDevicePool devicePoolCreator) devicePoolCreator {
 	return func(projectARN devicefarm.ProjectARN, deviceARN devicefarm.DeviceARN) (devicefarm.DevicePoolARN, error) {
 		logger.Info("searching AWS Device Farm device pool to skip creation")
 		devicePoolARN, err := findDevicePoolARN(projectARN, deviceARN)
@@ -56,4 +55,36 @@ func newDevicePoolCreatorIfNotExists(logger logging.SeverityLogger, findDevicePo
 		logger.Info("skipping to create AWS Device Farm device pool (because already exists)")
 		return devicePoolARN, nil
 	}
+}
+
+func newDevicePoolCreatorCached(createDevicePool devicePoolCreator) devicePoolCreator {
+	var mu sync.Mutex
+	cache := make(map[projectARNAndDeviceARN]devicefarm.DevicePoolARN)
+
+	return func(projectARN devicefarm.ProjectARN, deviceARN devicefarm.DeviceARN) (devicefarm.DevicePoolARN, error) {
+		mu.Lock()
+		defer mu.Unlock()
+
+		key := projectARNAndDeviceARN{
+			projectARN: projectARN,
+			deviceARN:  deviceARN,
+		}
+
+		if cached, ok := cache[key]; ok {
+			return cached, nil
+		}
+
+		devicePoolARN, err := createDevicePool(projectARN, deviceARN)
+		if err != nil {
+			return "", err
+		}
+
+		cache[key] = devicePoolARN
+		return devicePoolARN, nil
+	}
+}
+
+type projectARNAndDeviceARN struct {
+	projectARN devicefarm.ProjectARN
+	deviceARN  devicefarm.DeviceARN
 }

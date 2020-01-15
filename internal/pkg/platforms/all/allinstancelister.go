@@ -5,36 +5,25 @@ import (
 	"sync"
 )
 
-func ListAllInstances(bag platforms.AllInstanceListerBag) map[platforms.ID]InstancesOrError {
-	platformTable := make(map[platforms.ID]platforms.AllInstanceLister, len(PlatformTable))
-
-	for _, platform := range PlatformTable {
-		platformTable[platform.ID()] = platform.AllInstanceLister()
-	}
-
-	return listAllInstancesOn(platformTable, bag)
-}
-
-func listAllInstancesOn(platformTable map[platforms.ID]platforms.AllInstanceLister, bag platforms.AllInstanceListerBag) map[platforms.ID]InstancesOrError {
+func (ps Platforms) ListAllInstances() map[platforms.ID]InstancesOrError {
 	var mutex sync.Mutex
 	var wg sync.WaitGroup
 
-	table := make(map[platforms.ID]InstancesOrError, len(PlatformTable))
+	table := make(map[platforms.ID]InstancesOrError, len(ps.table))
 
-	for platformID, listAllInstances := range platformTable {
+	for platformID, p := range ps.table {
 		wg.Add(1)
 		go func(platformID platforms.ID, listAllInstances platforms.AllInstanceLister) {
 			defer wg.Done()
 
-			entries, err := listAllInstances(bag)
+			entries, err := listAllInstances()
 
 			mutex.Lock()
 			defer mutex.Unlock()
 			table[platformID] = InstancesOrError{entries, err}
-		}(platformID, listAllInstances)
+		}(platformID, p.AllInstanceLister())
 	}
 
 	wg.Wait()
-
 	return table
 }

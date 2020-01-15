@@ -1,13 +1,11 @@
 package awsdevicefarm
 
 import (
-	"github.com/dena/devfarm/internal/pkg/executor/awscli/devicefarm"
+	"github.com/dena/devfarm/internal/pkg/exec/awscli/devicefarm"
 	"github.com/dena/devfarm/internal/pkg/platforms"
 )
 
-type instanceGroupLister func() ([]platforms.InstanceGroupListEntry, error)
-
-func newInstanceGroupLister(listProjects devicefarm.ProjectLister) instanceGroupLister {
+func newInstanceGroupLister(listProjects devicefarm.ProjectLister) platforms.InstanceGroupLister {
 	return func() ([]platforms.InstanceGroupListEntry, error) {
 		projects, projectsErr := listProjects()
 		if projectsErr != nil {

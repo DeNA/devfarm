@@ -12,33 +12,23 @@ type InstancesOrError struct {
 }
 type InstancesListerTable map[platforms.ID]platforms.InstanceLister
 
-func ListInstances(groupName platforms.InstanceGroupName, bag platforms.InstanceListerBag) map[platforms.ID]InstancesOrError {
-	listerTable := make(InstancesListerTable, len(PlatformTable))
-
-	for _, platform := range PlatformTable {
-		listerTable[platform.ID()] = platform.InstanceLister()
-	}
-
-	return listInstancesOn(listerTable, groupName, bag)
-}
-
-func listInstancesOn(platformTable InstancesListerTable, groupName platforms.InstanceGroupName, bag platforms.InstanceListerBag) map[platforms.ID]InstancesOrError {
+func (ps Platforms) ListInstances(groupName platforms.InstanceGroupName) map[platforms.ID]InstancesOrError {
 	result := map[platforms.ID]InstancesOrError{}
 	var wg sync.WaitGroup
 	var mutex sync.Mutex
 
-	for platformID, lister := range platformTable {
+	for platformID, p := range ps.table {
 		wg.Add(1)
 
 		go func(platformID platforms.ID, lister platforms.InstanceLister) {
 			defer wg.Done()
 
-			entries, err := lister(groupName, bag)
+			entries, err := lister(groupName)
 
 			mutex.Lock()
 			defer mutex.Unlock()
 			result[platformID] = InstancesOrError{entries, err}
-		}(platformID, lister)
+		}(platformID, p.InstanceLister())
 	}
 
 	wg.Wait()

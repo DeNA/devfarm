@@ -11,7 +11,7 @@ import (
 const maxLifetime = 150 * time.Minute
 
 func newPlanValidator() platforms.PlanValidator {
-	return func(bag platforms.PlanValidatorBag, plan platforms.EitherPlan) error {
+	return func(plan platforms.EitherPlan) error {
 		lifetime := plan.CommonPart.Lifetime
 		if lifetime > maxLifetime {
 			return fmt.Errorf("liftime must be shorter than 150 minutes: got %.0f minutes", lifetime.Minutes())

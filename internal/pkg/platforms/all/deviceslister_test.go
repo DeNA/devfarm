@@ -83,9 +83,15 @@ func TestListAllDevices(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(fmt.Sprintf("listAllDevicesOn(%#v, bag)", c.table), func(t *testing.T) {
-			bag := platforms.AnyDevicesListerBag()
+			table := make(map[platforms.ID]platforms.Platform)
+			for platformID, deviceLister := range c.table {
+				p := platforms.AnyPlatform()
+				p.DeviceListerFunc = deviceLister
+				table[platformID] = p
+			}
+			ps := Platforms{table: table}
 
-			got := listAllDevicesOn(c.table, bag)
+			got := ps.ListAllDevices()
 
 			if !reflect.DeepEqual(got, c.expected) {
 				t.Errorf("got %v, want %v", got, c.expected)

@@ -2,15 +2,12 @@ package awsdevicefarm
 
 import (
 	"fmt"
-	"github.com/dena/devfarm/internal/pkg/executor/awscli/devicefarm"
+	"github.com/dena/devfarm/internal/pkg/exec/awscli/devicefarm"
 	"github.com/dena/devfarm/internal/pkg/platforms"
 )
 
-func newIOSRunner(launchRemoteAgent remoteAgentLauncher, waitRunResult runResultWaiter) platforms.IOSForever {
-	return func(
-		plan platforms.IOSPlan,
-		bag platforms.IOSForeverBag,
-	) error {
+func newIOSRunner(launchRemoteAgent RemoteAgentLauncher, waitRunResult RunResultWaiter) platforms.IOSRunner {
+	return func(plan platforms.IOSPlan) error {
 		opts := newIOSAgentLauncherOpts(
 			plan.IOSSpecificPart.IPA,
 			plan.IOSSpecificPart.Args,

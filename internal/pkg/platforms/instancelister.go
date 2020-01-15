@@ -1,17 +1,6 @@
 package platforms
 
-import (
-	"github.com/dena/devfarm/internal/pkg/executor"
-	"github.com/dena/devfarm/internal/pkg/logging"
-)
-
-type InstanceListerBag interface {
-	GetLogger() logging.SeverityLogger
-	GetExecutor() executor.Executor
-	GetFinder() executor.ExecutableFinder
-}
-
-type InstanceLister func(groupName InstanceGroupName, bag InstanceListerBag) ([]InstanceOrError, error)
+type InstanceLister func(groupName InstanceGroupName) ([]InstanceOrError, error)
 
 type InstanceOrError struct {
 	Instance

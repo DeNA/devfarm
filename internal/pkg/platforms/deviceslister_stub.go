@@ -11,12 +11,8 @@ func AnyDeviceOrError() DeviceOrError {
 	}
 }
 
-func AnyDevicesListerBag() DevicesListerBag {
-	return AnyBag()
-}
-
 func StubDeviceLister(pairs []DeviceOrError, err error) DeviceLister {
-	return func(DevicesListerBag) ([]DeviceOrError, error) {
+	return func() ([]DeviceOrError, error) {
 		return pairs, err
 	}
 }

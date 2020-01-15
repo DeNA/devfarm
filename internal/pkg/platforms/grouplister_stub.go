@@ -7,7 +7,7 @@ func AnyInstanceGroupLister() InstanceGroupLister {
 }
 
 func StubInstanceGroupLister(entries []InstanceGroupListEntry, err error) InstanceGroupLister {
-	return func(InstanceGroupListerBag) ([]InstanceGroupListEntry, error) {
+	return func() ([]InstanceGroupListEntry, error) {
 		return entries, err
 	}
 }

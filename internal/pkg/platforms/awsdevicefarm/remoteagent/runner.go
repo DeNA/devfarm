@@ -2,9 +2,9 @@ package remoteagent
 
 import (
 	"fmt"
-	"github.com/dena/devfarm/internal/pkg/executor"
-	"github.com/dena/devfarm/internal/pkg/executor/adb"
-	"github.com/dena/devfarm/internal/pkg/executor/iosdeploy"
+	"github.com/dena/devfarm/internal/pkg/exec"
+	"github.com/dena/devfarm/internal/pkg/exec/adb"
+	"github.com/dena/devfarm/internal/pkg/exec/iosdeploy"
 	"github.com/dena/devfarm/internal/pkg/logging"
 	"github.com/dena/devfarm/internal/pkg/platforms"
 )
@@ -13,10 +13,10 @@ type Runner func() error
 
 type RunnerBag interface {
 	GetLogger() logging.SeverityLogger
-	GetEnvGetter() executor.EnvGetter
-	GetFinder() executor.ExecutableFinder
-	GetExecutor() executor.Executor
-	GetInteractiveExecutor() executor.InteractiveExecutor
+	GetEnvGetter() exec.EnvGetter
+	GetFinder() exec.ExecutableFinder
+	GetExecutor() exec.Executor
+	GetInteractiveExecutor() exec.InteractiveExecutor
 }
 
 func NewRunner(bag RunnerBag) Runner {
@@ -66,7 +66,7 @@ func NewRunner(bag RunnerBag) Runner {
 				bag.GetLogger(),
 				packageName,
 				adb.NewSerialNumberGetter(adbCmd),
-				adb.NewWaitUntilBecomeReady(adb.NewReadyDetector(getProp), executor.NewWaiter()),
+				adb.NewWaitUntilBecomeReady(adb.NewReadyDetector(getProp), exec.NewWaiter()),
 				adb.NewMainIntentFinder(adbCmd),
 				adb.NewActivityStarter(adbCmd),
 				newAndroidWatcher(bag.GetLogger(), adb.NewActivityMonitor(interactiveAdbCmd)),

@@ -1,15 +1,15 @@
 package awsdevicefarm
 
 import (
-	"github.com/dena/devfarm/internal/pkg/executor/awscli/devicefarm"
+	"github.com/dena/devfarm/internal/pkg/exec/awscli/devicefarm"
 	"github.com/dena/devfarm/internal/pkg/platforms"
 )
 
-func anySuccessfulProjectCreatorSkipIfExists() projectCreatorIfNotExists {
-	return stubProjectCreatorSkipIfExists("arn:aws:devicefarm:ANY_PROJECT_ARN", nil)
+func anySuccessfulProjectCreator() projectCreator {
+	return stubProjectCreator("arn:aws:devicefarm:ANY_PROJECT_ARN", nil)
 }
 
-func stubProjectCreatorSkipIfExists(projectARN devicefarm.ProjectARN, err error) projectCreatorIfNotExists {
+func stubProjectCreator(projectARN devicefarm.ProjectARN, err error) projectCreator {
 	return func(platforms.InstanceGroupName) (devicefarm.ProjectARN, error) {
 		return projectARN, err
 	}

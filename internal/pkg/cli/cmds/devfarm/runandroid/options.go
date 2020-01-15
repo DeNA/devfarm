@@ -50,7 +50,7 @@ func takeOptions(args []string) (options, *cli.ErrorAndUsage) {
 		)
 	}
 
-	platform, platformErr := all.FindPlatformByName(*unsafePlatformName)
+	platformID, platformErr := all.ValidatePlatformID(*unsafePlatformName)
 	if platformErr != nil {
 		flags.Usage()
 		return options{}, cli.NewErrorAndUsage(
@@ -117,7 +117,7 @@ func takeOptions(args []string) (options, *cli.ErrorAndUsage) {
 		verbose:           *verbose,
 		dryRun:            *dryRun,
 		instanceGroupName: instanceGroupName,
-		platformID:        platform.ID(),
+		platformID:        platformID,
 		device:            platforms.NewAndroidDevice(deviceName, androidVersion),
 		apkPath:           apkPath,
 		appID:             appID,

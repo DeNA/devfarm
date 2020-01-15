@@ -13,33 +13,23 @@ type DevicesTableEntry struct {
 type DevicesTable map[platforms.ID]DevicesTableEntry
 type DevicesListerTable map[platforms.ID]platforms.DeviceLister
 
-func ListAllDevices(bag platforms.DevicesListerBag) DevicesTable {
-	listerTable := make(DevicesListerTable, len(PlatformTable))
-
-	for _, platform := range PlatformTable {
-		listerTable[platform.ID()] = platform.DeviceLister()
-	}
-
-	return listAllDevicesOn(listerTable, bag)
-}
-
-func listAllDevicesOn(listerTable DevicesListerTable, bag platforms.DevicesListerBag) DevicesTable {
+func (ps Platforms) ListAllDevices() DevicesTable {
 	result := DevicesTable{}
 	var wg sync.WaitGroup
 	var mutex sync.Mutex
 
-	for platformID, lister := range listerTable {
+	for platformID, p := range ps.table {
 		wg.Add(1)
 
 		go func(platformID platforms.ID, lister platforms.DeviceLister) {
 			defer wg.Done()
 
-			entries, err := lister(bag)
+			entries, err := lister()
 
 			mutex.Lock()
 			defer mutex.Unlock()
 			result[platformID] = DevicesTableEntry{entries, err}
-		}(platformID, lister)
+		}(platformID, p.DeviceLister())
 	}
 
 	wg.Wait()

@@ -1,18 +1,18 @@
 package platforms
 
 import (
-	"github.com/dena/devfarm/internal/pkg/executor"
+	"github.com/dena/devfarm/internal/pkg/exec"
 	"github.com/dena/devfarm/internal/pkg/logging"
 )
 
 func AnyBag() Bag {
 	return NewBag(
 		logging.NullSeverityLogger(),
-		executor.AnyFailedExecutor,
-		executor.AnyFailedInteractiveExecutor,
-		executor.AnyFailedExecutableFinder,
-		executor.AnyFailedUploader(),
-		executor.AnyFailedFileOpener(),
-		executor.AnyEnvGetter(),
+		exec.AnyFailedExecutor,
+		exec.AnyFailedInteractiveExecutor,
+		exec.AnyFailedExecutableFinder,
+		exec.AnyFailedUploader(),
+		exec.AnyFailedFileOpener(),
+		exec.AnyEnvGetter(),
 	)
 }

@@ -2,17 +2,16 @@ package awsdevicefarm
 
 import (
 	"fmt"
-	"github.com/dena/devfarm/internal/pkg/executor/awscli/devicefarm"
+	"github.com/dena/devfarm/internal/pkg/exec/awscli/devicefarm"
+	"github.com/dena/devfarm/internal/pkg/logging"
 	"github.com/dena/devfarm/internal/pkg/platforms"
 )
 
-func newAndroidRunnerWithRetry(launchRemoteAgent remoteAgentLauncher, waitRunResult runResultWaiter, retryCount int) platforms.AndroidRunner {
+func newAndroidRunnerWithRetry(logger logging.SeverityLogger, launchRemoteAgent RemoteAgentLauncher, waitRunResult RunResultWaiter, retryCount int) platforms.AndroidRunner {
 	remainedRetryCount := retryCount
 
-	var runAndroid func(plan platforms.AndroidPlan, bag platforms.AndroidRunnerBag) error
-	runAndroid = func(plan platforms.AndroidPlan, bag platforms.AndroidRunnerBag) error {
-		logger := bag.GetLogger()
-
+	var runAndroid func(plan platforms.AndroidPlan) error
+	runAndroid = func(plan platforms.AndroidPlan) error {
 		opts := newAndroidAgentLauncherOpts(
 			plan.AndroidSpecificPart.APK,
 			plan.AndroidSpecificPart.AppID,
@@ -42,7 +41,7 @@ func newAndroidRunnerWithRetry(launchRemoteAgent remoteAgentLauncher, waitRunRes
 				remainedRetryCount--
 				logger.Info("Retry because an error occurred (and errors does not mean test failures)")
 
-				if retryErr := runAndroid(plan, bag); retryErr != nil {
+				if retryErr := runAndroid(plan); retryErr != nil {
 					return retryErr
 				}
 				return nil

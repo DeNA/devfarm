@@ -2,7 +2,7 @@ package remoteagent
 
 import (
 	"fmt"
-	"github.com/dena/devfarm/internal/pkg/executor"
+	"github.com/dena/devfarm/internal/pkg/exec"
 	"github.com/dena/devfarm/internal/pkg/platforms"
 	"github.com/dena/devfarm/internal/pkg/platforms/awsdevicefarm"
 	"strconv"
@@ -59,7 +59,7 @@ func NewAndroidSpecificEnvVars(androidAppID platforms.AndroidAppID) AndroidSpeci
 
 type envVarsGetter func() (EnvVars, error)
 
-func newEnvVarsGetter(getEnv executor.EnvGetter) envVarsGetter {
+func newEnvVarsGetter(getEnv exec.EnvGetter) envVarsGetter {
 	return func() (EnvVars, error) {
 		// SEE: https://docs.aws.amazon.com/devicefarm/latest/developerguide/custom-test-environment-env.html
 		// > The device platform name. It is either Android or iOS.
@@ -126,7 +126,7 @@ func newEnvVarsGetter(getEnv executor.EnvGetter) envVarsGetter {
 
 type iosSpecificEnvVarsGetter func() (IOSSpecificEnvVars, error)
 
-func newIOSSpecificEnvVarsGetter(getEnv executor.EnvGetter) iosSpecificEnvVarsGetter {
+func newIOSSpecificEnvVarsGetter(getEnv exec.EnvGetter) iosSpecificEnvVarsGetter {
 	return func() (IOSSpecificEnvVars, error) {
 		// NOTE: Embedded by assets/aws-device-farm/workflows/0-shared.bash
 		unarchivedIOSAppPath := getEnv("DEVFARM_AGENT_UNARCHIVED_IOS_APP_PATH")
@@ -146,7 +146,7 @@ func newIOSSpecificEnvVarsGetter(getEnv executor.EnvGetter) iosSpecificEnvVarsGe
 
 type androidSpecificEnvVarsGetter func() (AndroidSpecificEnvVars, error)
 
-func newAndroidSpecificEnvVarsGetter(getEnv executor.EnvGetter) androidSpecificEnvVarsGetter {
+func newAndroidSpecificEnvVarsGetter(getEnv exec.EnvGetter) androidSpecificEnvVarsGetter {
 	return func() (AndroidSpecificEnvVars, error) {
 		// NOTE: Embedded by assets/aws-device-farm/workflows/0-shared.bash
 		unsafeAppID := getEnv("DEVFARM_AGENT_ANDROID_APP_ID_IF_ANDROID")

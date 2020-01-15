@@ -6,7 +6,7 @@ import (
 	"github.com/dena/devfarm/internal/pkg/cli"
 	"github.com/dena/devfarm/internal/pkg/cli/planfile"
 	"github.com/dena/devfarm/internal/pkg/cli/subcmd"
-	"github.com/dena/devfarm/internal/pkg/executor"
+	"github.com/dena/devfarm/internal/pkg/exec"
 )
 
 var CommandDef = subcmd.SubCommandDef{
@@ -32,7 +32,7 @@ func Command(args []string, procInout cli.ProcessInout) cli.ExitStatus {
 	}
 
 	logger := cli.NewLogger(false, procInout.Stderr)
-	open := executor.NewFileOpener(logger, false)
+	open := exec.NewFileOpener(logger, false)
 
 	planFile, planFileErr := planfile.Read(planFilePath, open)
 	if planFileErr != nil {

@@ -31,8 +31,9 @@ func Command(args []string, procInout cli.ProcessInout) cli.ExitStatus {
 		opts.lifetime,
 		platforms.LocationHintForCLIArguments,
 	)
+	ps := all.NewPlatforms(bag)
 
-	foreverErr := all.ForeverIOS(plan, bag)
+	foreverErr := ps.ForeverIOS(plan)
 
 	if _, err := fmt.Fprint(procInout.Stdout, formatter.PrettyTSV(format(opts.platformID, foreverErr))); err != nil {
 		return cli.ExitAbnormal
