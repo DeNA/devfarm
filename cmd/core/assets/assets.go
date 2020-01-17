@@ -1,4 +1,4 @@
-//go:generate ../../../../scripts/build-devfarmagent
+//go:generate ../../../scripts/build-devfarmagent
 
 package assets
 
