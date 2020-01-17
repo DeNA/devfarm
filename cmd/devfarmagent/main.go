@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/dena/devfarm/cmd/internal/pkg/cli"
-	"github.com/dena/devfarm/cmd/internal/pkg/cli/cmds/devfarm/version"
-	"github.com/dena/devfarm/cmd/internal/pkg/cli/cmds/devfarmagent/awsdevicefarm"
-	"github.com/dena/devfarm/cmd/internal/pkg/cli/subcmd"
+	"github.com/dena/devfarm/cmd/core/cli"
+	"github.com/dena/devfarm/cmd/core/cli/cmds/devfarm/version"
+	"github.com/dena/devfarm/cmd/core/cli/cmds/devfarmagent/awsdevicefarm"
+	"github.com/dena/devfarm/cmd/core/cli/subcmd"
 	"os"
 )
 
