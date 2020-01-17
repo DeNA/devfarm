@@ -19,8 +19,23 @@ jobs:
           name: Test
           command: ./test/test-all.bash
 
+  go_get:
+    docker:
+      - image: circleci/golang:1.12
+    steps:
+      - run:
+          name: Install devfarm
+          command: go get github.com/DeNA/devfarm/cmd/devfarm
+      - run:
+          name: Test
+          command: devfarm version
+
 workflows:
   version: 2
   build:
     jobs:
       - build
+      - go_get:
+          filters:
+            branches:
+              only: master
