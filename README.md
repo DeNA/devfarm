@@ -479,8 +479,8 @@ Requirements
 Todo
 ----
 
-- Stabilize iOS apps made by Unity on AWS Device Farm (at now, 2/3 runs were failed)
-    - Debugging have not progressed much now
+- ~~Stabilize iOS apps made by Unity on AWS Device Farm (at now, 2/3 runs were failed)~~
+    - We have started to do external monitoring, and we confirmed that it almost achived, but still about 1/30 runs were unstable
 - Detect that the app become background
     - Detection for iOS have never been tested
     - Detection for Android is not supported yet, because the version of adb on AWS Device Farm is 1.0.32 (too old)
