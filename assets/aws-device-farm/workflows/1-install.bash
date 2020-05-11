@@ -28,7 +28,7 @@ install_ios() {
 
 	echo "Install ios-deploy into $DEVFARM_AGENT_IOS_DEPLOY_ROOT"
 	(cd "$DEVFARM_AGENT_IOS_DEPLOY_ROOT"
-		npm install
+		npm ci
 	)
 
 	echo "Verify ios-deploy"
