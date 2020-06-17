@@ -1,20 +1,55 @@
 package remoteagent
 
 import (
-	"bytes"
-	"context"
+	"github.com/dena/devfarm/cmd/core/exec/adb"
 	"github.com/dena/devfarm/cmd/core/logging"
 	"io"
-	"strings"
 	"testing"
 	"time"
 )
 
-func TestAndroidWatcher(t *testing.T) {
-	var startMsg = `Monitoring activity manager...  available commands:
+func TestAndroidWatcherNotCrashed(t *testing.T) {
+	spyLogger := logging.SpySeverityLogger()
+	stdoutReader, stdoutWriter := io.Pipe()
+
+	crashWatcher := adb.NewAmMonitorCrashWatcher(spyLogger, stdoutReader)
+
+	go func() {
+		_, _ = io.WriteString(stdoutWriter, startMsg)
+		time.Sleep(100 * time.Millisecond)
+		_ = stdoutWriter.Close()
+	}()
+
+	if err := crashWatcher.Watch(); err != nil {
+		t.Log(spyLogger.Logs.String())
+		t.Errorf("got %v, want nil", err)
+		return
+	}
+}
+
+func TestAndroidWatcherCrashed(t *testing.T) {
+	spyLogger := logging.SpySeverityLogger()
+	stdoutReader, stdoutWriter := io.Pipe()
+
+	crashWatcher := adb.NewAmMonitorCrashWatcher(spyLogger, stdoutReader)
+
+	go func() {
+		_, _ = io.WriteString(stdoutWriter, startMsg)
+		time.Sleep(100 * time.Millisecond)
+		_, _ = io.WriteString(stdoutWriter, crashMsg)
+	}()
+
+	if err := crashWatcher.Watch(); err == nil {
+		t.Log(spyLogger.Logs.String())
+		t.Error("got nil, want error")
+		return
+	}
+}
+
+var startMsg = `Monitoring activity manager...  available commands:
 (q)uit: finish monitoring
 `
-	var crashMsg = `** ERROR: PROCESS CRASHED
+var crashMsg = `** ERROR: PROCESS CRASHED
 processName: com.example.apk
 processPid: 1234
 shortMsg: java.lang.RuntimeException
@@ -31,37 +66,3 @@ Waiting after crash...  available commands:
 (k)ill: immediately kill app
 (q)uit: finish monitoring
 `
-	spyLogger := logging.SpySeverityLogger()
-
-	stdin := &bytes.Buffer{}
-	stdoutReader, stdoutWriter := io.Pipe()
-	stderrReader := strings.NewReader("")
-
-	handler := adbAmMonitorHandler{
-		logger: spyLogger,
-		stdin:  stdin,
-		stdout: stdoutReader,
-		stderr: stderrReader,
-	}
-
-	go func() {
-		_, _ = io.WriteString(stdoutWriter, startMsg)
-		time.Sleep(100 * time.Millisecond)
-		_, _ = io.WriteString(stdoutWriter, crashMsg)
-	}()
-
-	err := handler.wait(context.Background())
-
-	if err == nil {
-		t.Log(spyLogger.Logs.String())
-		t.Error("got nil, want error")
-		return
-	}
-
-	expectedCmd := "q\n" // means (q)uit
-	if stdin.String() != expectedCmd {
-		t.Log(spyLogger.Logs.String())
-		t.Errorf("got %q, want %q", stdin.String(), expectedCmd)
-		return
-	}
-}

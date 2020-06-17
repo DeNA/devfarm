@@ -8,7 +8,7 @@ import (
 
 type InteractiveExecutor func(ctx context.Context, stdin io.ReadCloser, stdout io.Writer, stderr io.Writer, args ...string) error
 
-func NewInteractiveExecutor(find exec.ExecutableFinder, execute exec.InteractiveExecutor) InteractiveExecutor {
+func NewInteractiveExecutor(find exec.ExecutableFinder, executor exec.InteractiveExecutor) InteractiveExecutor {
 	return func(ctx context.Context, stdin io.ReadCloser, stdout io.Writer, stderr io.Writer, args ...string) error {
 		if err := find("adb"); err != nil {
 			return &ExecutorError{NoSuchCommand: err}
@@ -24,7 +24,7 @@ func NewInteractiveExecutor(find exec.ExecutableFinder, execute exec.Interactive
 		// >    -P         port of adb server [default=5037]
 		// >    -L SOCKET  listen on given socket for adb server [default=tcp:localhost:5037]
 		req := exec.NewInteractiveRequest(stdin, stdout, stderr, "adb", args)
-		if err := execute(ctx, req); err != nil {
+		if err := executor.Execute(ctx, req); err != nil {
 			return &ExecutorError{UnexpectedExitStatus: err}
 		}
 

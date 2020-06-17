@@ -6,15 +6,16 @@ import (
 	"fmt"
 	"github.com/dena/devfarm/cmd/core/logging"
 	"github.com/google/go-cmp/cmp"
-	"io/ioutil"
+	"io"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestNewInteractiveExecutor(t *testing.T) {
 	cases := []struct {
 		ctx            func() context.Context
-		stdin          string
+		stdin          io.Reader
 		command        string
 		args           []string
 		expectedStdout string
@@ -22,8 +23,11 @@ func TestNewInteractiveExecutor(t *testing.T) {
 		expectedErr    bool
 	}{
 		{
-			ctx:            func() context.Context { return context.Background() },
-			stdin:          "hello",
+			ctx: func() context.Context {
+				ctx, _ := context.WithTimeout(context.Background(), 1000*time.Millisecond)
+				return ctx
+			},
+			stdin:          strings.NewReader("hello"),
 			command:        "cat",
 			args:           []string{"-"},
 			expectedStdout: "hello",
@@ -33,10 +37,10 @@ func TestNewInteractiveExecutor(t *testing.T) {
 		{
 			ctx: func() context.Context {
 				ctx, cancel := context.WithCancel(context.Background())
-				defer cancel()
+				cancel()
 				return ctx
 			},
-			stdin:          "",
+			stdin:          strings.NewReader(""),
 			command:        "sleep",
 			args:           []string{"100"},
 			expectedStdout: "",
@@ -50,10 +54,10 @@ func TestNewInteractiveExecutor(t *testing.T) {
 			spyLogger := logging.SpySeverityLogger()
 			stdout := &bytes.Buffer{}
 			stderr := &bytes.Buffer{}
-			req := NewInteractiveRequest(ioutil.NopCloser(strings.NewReader(c.stdin)), stdout, stderr, c.command, c.args)
+			req := NewInteractiveRequest(c.stdin, stdout, stderr, c.command, c.args)
 
 			exec := NewInteractiveExecutor(spyLogger, false)
-			err := exec(c.ctx(), req)
+			err := exec.Execute(c.ctx(), req)
 
 			if stdout.String() != c.expectedStdout {
 				t.Error(cmp.Diff(c.expectedStdout, stdout.String()))

@@ -5,11 +5,15 @@ import (
 	"github.com/dena/devfarm/cmd/core/testutil"
 )
 
-var AnySuccessfulInteractiveExecutor = StubInteractiveExecutor(nil)
-var AnyFailedInteractiveExecutor = StubInteractiveExecutor(testutil.AnyError)
+var AnySuccessfulInteractiveExecutor = &StubInteractiveExecutor{Err: nil}
+var AnyFailedInteractiveExecutor = &StubInteractiveExecutor{Err: testutil.AnyError}
 
-func StubInteractiveExecutor(err error) InteractiveExecutor {
-	return func(context.Context, InteractiveRequest) error {
-		return err
-	}
+type StubInteractiveExecutor struct {
+	Err error
+}
+
+var _ InteractiveExecutor = &StubInteractiveExecutor{}
+
+func (s *StubInteractiveExecutor) Execute(_ context.Context, _ InteractiveRequest) error {
+	return s.Err
 }
