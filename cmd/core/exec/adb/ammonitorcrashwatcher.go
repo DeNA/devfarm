@@ -21,12 +21,12 @@ func NewAmMonitorCrashWatcher(logger logging.SeverityLogger) AmMonitorCrashWatch
 			// > processName: com.example.app
 			isCrashed := strings.Contains(line, "ERROR: PROCESS CRASHED")
 			if isCrashed {
-				logger.Debug("am monitor: process crashed")
+				logger.Debug("am monitor: process got crashed")
 				return true
 			}
 		}
 
-		logger.Debug("am monitor: process has never crashed")
+		logger.Debug("am monitor: process had never got crashed")
 		return false
 	}
 }
