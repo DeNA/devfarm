@@ -6,10 +6,10 @@ import (
 	"io"
 )
 
-type InteractiveExecutor func(ctx context.Context, stdin io.ReadCloser, stdout io.Writer, stderr io.Writer, args ...string) error
+type InteractiveExecutor func(ctx context.Context, stdin io.Reader, stdout io.Writer, stderr io.Writer, args ...string) error
 
 func NewInteractiveExecutor(find exec.ExecutableFinder, executor exec.InteractiveExecutor) InteractiveExecutor {
-	return func(ctx context.Context, stdin io.ReadCloser, stdout io.Writer, stderr io.Writer, args ...string) error {
+	return func(ctx context.Context, stdin io.Reader, stdout io.Writer, stderr io.Writer, args ...string) error {
 		if err := find("adb"); err != nil {
 			return &ExecutorError{NoSuchCommand: err}
 		}
