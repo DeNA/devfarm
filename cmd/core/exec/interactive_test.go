@@ -26,7 +26,7 @@ func TestNewInteractiveExecutor(t *testing.T) {
 	}{
 		{
 			ctx: func() context.Context {
-				ctx, _ := context.WithTimeout(context.Background(), timeout)
+				ctx, _ := context.WithTimeout(context.Background(), timeout) // nolint:govet
 				return ctx
 			},
 			stdin:          strings.NewReader("hello"),
@@ -38,7 +38,7 @@ func TestNewInteractiveExecutor(t *testing.T) {
 		},
 		{
 			ctx: func() context.Context {
-				ctx, _ := context.WithTimeout(context.Background(), timeout)
+				ctx, _ := context.WithTimeout(context.Background(), timeout) // nolint:govet
 				return ctx
 			},
 			stdin:          nil,
