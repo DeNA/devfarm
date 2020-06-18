@@ -5,10 +5,10 @@ import (
 	"io"
 )
 
-type ActivityMonitor func(ctx context.Context, serialNumber SerialNumber, stdin io.ReadCloser, stdout io.Writer, stderr io.Writer) error
+type ActivityMonitor func(ctx context.Context, serialNumber SerialNumber, stdin io.Reader, stdout io.Writer, stderr io.Writer) error
 
 func NewActivityMonitor(adbCmd InteractiveExecutor) ActivityMonitor {
-	return func(ctx context.Context, serialNumber SerialNumber, stdin io.ReadCloser, stdout io.Writer, stderr io.Writer) error {
+	return func(ctx context.Context, serialNumber SerialNumber, stdin io.Reader, stdout io.Writer, stderr io.Writer) error {
 		// > monitor [options] Start monitoring for crashes or ANRs.
 		// > Options are:
 		// > --gdb: Start gdbserv on the given port at crash/ANR.

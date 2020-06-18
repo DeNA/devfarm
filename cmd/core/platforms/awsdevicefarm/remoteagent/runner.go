@@ -69,7 +69,11 @@ func NewRunner(bag RunnerBag) Runner {
 				adb.NewWaitUntilBecomeReady(adb.NewReadyDetector(getProp), exec.NewWaiter()),
 				adb.NewMainIntentFinder(adbCmd),
 				adb.NewActivityStarter(adbCmd),
-				newAndroidWatcher(bag.GetLogger(), adb.NewActivityMonitor(interactiveAdbCmd)),
+				newAndroidWatcher(
+					bag.GetLogger(),
+					adb.NewActivityMonitor(interactiveAdbCmd),
+					adb.NewAmMonitorCrashWatcher(bag.GetLogger()),
+				),
 			)
 			return runAndroidApp(platforms.AndroidIntentExtras(envVars.AppArgs), envVars.Lifetime)
 

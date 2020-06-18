@@ -9,19 +9,19 @@ import (
 	"os/exec"
 )
 
-type InteractiveExecutor func(ctx context.Context, request InteractiveRequest) error
+type InteractiveExecutor interface {
+	Execute(ctx context.Context, request InteractiveRequest) error
+}
 
 func NewInteractiveExecutor(logger logging.SeverityLogger, dryRun bool) InteractiveExecutor {
-	return func(ctx context.Context, request InteractiveRequest) error {
-		if dryRun {
-			return dryExecuteInteractively(logger, request)
-		}
-		return executeInteractively(ctx, logger, request)
+	if dryRun {
+		return &dryRunInteractiveExecutor{logger: logger}
 	}
+	return &interactiveExecutor{logger: logger}
 }
 
 type InteractiveRequest struct {
-	Stdin   io.ReadCloser
+	Stdin   io.Reader
 	Stdout  io.Writer
 	Stderr  io.Writer
 	Command string
@@ -29,7 +29,7 @@ type InteractiveRequest struct {
 }
 
 func NewInteractiveRequest(
-	stdin io.ReadCloser,
+	stdin io.Reader,
 	stdout io.Writer,
 	stderr io.Writer,
 	command string,
@@ -44,15 +44,14 @@ func NewInteractiveRequest(
 	}
 }
 
-func dryExecuteInteractively(logger logging.SeverityLogger, request InteractiveRequest) error {
-	logger.Debug(fmt.Sprintf("interactive (dry run): %s", consoleLikeLine(request.Command, request.Args)))
-	logger.Debug("stdin: nil\nstdout: nil\nstderr: nil\nerr: nil (assume success)")
-
-	return nil
+type interactiveExecutor struct {
+	logger logging.SeverityLogger
 }
 
-func executeInteractively(ctx context.Context, logger logging.SeverityLogger, request InteractiveRequest) error {
-	logger.Debug(fmt.Sprintf("interactive: %s", consoleLikeLine(request.Command, request.Args)))
+var _ InteractiveExecutor = &interactiveExecutor{}
+
+func (i *interactiveExecutor) Execute(ctx context.Context, request InteractiveRequest) error {
+	i.logger.Debug(fmt.Sprintf("interactive: %s", consoleLikeLine(request.Command, request.Args)))
 
 	cmd := exec.CommandContext(ctx, request.Command, request.Args...)
 
@@ -60,51 +59,74 @@ func executeInteractively(ctx context.Context, logger logging.SeverityLogger, re
 	if stdinErr != nil {
 		return stdinErr
 	}
+	i.teeWriter("stdin", stdinWriter, request.Stdin)
 
 	stdoutReader, stdoutErr := cmd.StdoutPipe()
 	if stdoutErr != nil {
 		return stdoutErr
 	}
+	i.teeReader("stdout", stdoutReader, request.Stdout)
+
 	stderrReader, stderrErr := cmd.StderrPipe()
 	if stderrErr != nil {
 		return stderrErr
 	}
+	i.teeReader("stderr", stderrReader, request.Stderr)
 
-	go func() {
-		scanner := bufio.NewScanner(io.TeeReader(stdoutReader, request.Stdout))
-		for scanner.Scan() {
-			logger.Debug(fmt.Sprintf(`stdout: %q`, scanner.Text()+"\n"))
-		}
-		logger.Debug("interactive: stdout closed")
-	}()
-
-	go func() {
-		scanner := bufio.NewScanner(io.TeeReader(stderrReader, request.Stderr))
-		for scanner.Scan() {
-			logger.Debug(fmt.Sprintf(`stderr: %q`, scanner.Text()+"\n"))
-		}
-		logger.Debug("interactive: stderr closed")
-	}()
-
-	if err := cmd.Start(); err != nil {
-		return err
-	}
-
-	defer request.Stdin.Close()
-	go func() {
-		defer stdinWriter.Close()
-
-		scanner := bufio.NewScanner(io.TeeReader(request.Stdin, stdinWriter))
-		for scanner.Scan() {
-			logger.Debug(fmt.Sprintf(`stdin: %q`, scanner.Text()+"\n"))
-		}
-		logger.Debug("interactive: stdin closed")
-	}()
-
-	if err := cmd.Wait(); err != nil {
-		logger.Debug(fmt.Sprintf("interactive: command %q exited with %q", request.Command, err.Error()))
+	if err := cmd.Run(); err != nil {
+		i.logger.Debug(fmt.Sprintf("interactive: command %q exited with %q", request.Command, err.Error()))
 		return err
 	}
 
 	return nil
 }
+
+// To print what data are read.
+func (i *interactiveExecutor) teeReader(name string, reader io.Reader, writer io.Writer) {
+	var teeReader io.Reader
+	if writer == nil {
+		teeReader = reader
+	} else {
+		teeReader = io.TeeReader(reader, writer)
+	}
+
+	go func() {
+		scanner := bufio.NewScanner(teeReader)
+		for scanner.Scan() {
+			i.logger.Debug(fmt.Sprintf(`%s: %q`, name, scanner.Text()+"\n"))
+		}
+		i.logger.Debug(fmt.Sprintf("interactive: %s closed", name))
+	}()
+}
+
+// To print what data are write.
+func (i *interactiveExecutor) teeWriter(name string, writer io.WriteCloser, reader io.Reader) {
+	if reader == nil {
+		if err := writer.Close(); err != nil {
+			i.logger.Error(fmt.Sprintf("interactive: failed to close stdin: %q", err.Error()))
+		}
+		return
+	}
+
+	go func() {
+		defer writer.Close()
+
+		scanner := bufio.NewScanner(io.TeeReader(reader, writer))
+		for scanner.Scan() {
+			i.logger.Debug(fmt.Sprintf(`%s: %q`, name, scanner.Text()+"\n"))
+		}
+		i.logger.Debug(fmt.Sprintf("interactive: %s closed", name))
+	}()
+}
+
+type dryRunInteractiveExecutor struct {
+	logger logging.SeverityLogger
+}
+
+func (d *dryRunInteractiveExecutor) Execute(_ context.Context, request InteractiveRequest) error {
+	d.logger.Debug(fmt.Sprintf("interactive (dry run): %s", consoleLikeLine(request.Command, request.Args)))
+	d.logger.Debug("stdin: nil\nstdout: nil\nstderr: nil\nerr: nil (assume success)")
+	return nil
+}
+
+var _ InteractiveExecutor = &dryRunInteractiveExecutor{}

@@ -52,5 +52,5 @@ func (s *SeverityLoggerSpy) Error(message string) {
 }
 
 func (s *SeverityLoggerSpy) Log(severity Severity, message string) {
-	s.Logs.WriteString(fmt.Sprintf("%s: %s", string(severity), message))
+	s.Logs.WriteString(fmt.Sprintf("%s: %s\n", string(severity), message))
 }
