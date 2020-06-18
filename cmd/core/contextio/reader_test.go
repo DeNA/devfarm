@@ -13,7 +13,7 @@ func TestReaderRead(t *testing.T) {
 	reader := NewReader(internalReader, internalReader, context.Background())
 
 	go func() {
-		time.Sleep(time.Duration(100) * time.Millisecond)
+		time.Sleep(100 * time.Millisecond)
 		_, _ = io.WriteString(internalWriter, "Hello")
 		_ = internalWriter.CloseWithError(io.EOF)
 	}()
@@ -33,7 +33,7 @@ func TestReaderReadCancel(t *testing.T) {
 
 	// NOTE: Do not use context.WithTimeout because several setup before ReadAll can take some duration.
 	go func() {
-		time.Sleep(time.Duration(100) * time.Millisecond)
+		time.Sleep(100 * time.Millisecond)
 		cancel()
 	}()
 
