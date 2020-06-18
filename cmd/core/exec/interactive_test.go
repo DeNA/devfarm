@@ -13,6 +13,8 @@ import (
 )
 
 func TestNewInteractiveExecutor(t *testing.T) {
+	timeout := 1000 * time.Millisecond
+
 	cases := []struct {
 		ctx            func() context.Context
 		stdin          io.Reader
@@ -24,13 +26,25 @@ func TestNewInteractiveExecutor(t *testing.T) {
 	}{
 		{
 			ctx: func() context.Context {
-				ctx, _ := context.WithTimeout(context.Background(), 1000*time.Millisecond)
+				ctx, _ := context.WithTimeout(context.Background(), timeout)
 				return ctx
 			},
 			stdin:          strings.NewReader("hello"),
 			command:        "cat",
 			args:           []string{"-"},
 			expectedStdout: "hello",
+			expectedStderr: "",
+			expectedErr:    false,
+		},
+		{
+			ctx: func() context.Context {
+				ctx, _ := context.WithTimeout(context.Background(), timeout)
+				return ctx
+			},
+			stdin:          nil,
+			command:        "cat",
+			args:           []string{"-"},
+			expectedStdout: "",
 			expectedStderr: "",
 			expectedErr:    false,
 		},
