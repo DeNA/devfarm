@@ -1,0 +1,24 @@
+#!/bin/bash
+set -euo pipefail
+set -x
+
+BASE_DIR="$(cd "$(dirname "$0")"; pwd)"
+
+
+main() {
+	local tag="${1:-latest}"
+	local image_id='asia.gcr.io/dena-internal-swet-gcp/devfarm'
+
+	(cd "$BASE_DIR"
+		docker build . -t "${image_id}:${tag}"
+
+		if [[ -n "${DEPLOY:-}" ]]; then
+			docker push "${image_id}:${tag}"
+		else
+			echo "NOTE: If you want to do $ docker push ${image_id}:${tag}, add DEPLOY=1 before the command."
+		fi
+	)
+}
+
+
+main "$@"
