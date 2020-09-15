@@ -467,6 +467,32 @@ Install
 $ go get -u github.com/dena/devfarm/cmd/devfarm
 ```
 
+<details>
+<summary>Using Docker</summary>
+
+```console
+$ docker pull <image_id>
+
+$ cat .env
+AWS_ACCESS_KEY_ID=***
+AWS_SECRET_ACCESS_KEY=***
+
+$ docker run --rm --env-file ./.env <image_id> auth-status
+
+$ tree -a "$(pwd)"
+.
+├── .env
+└── app
+    ├── Example.apk
+    ├── Example.ipa
+    └── planfile.yml
+
+1 directory, 4 files
+
+$ docker run --rm --env-file ./.env -v "$(pwd)/app:/app" <image_id> run-all /app/planfile
+```
+</details>
+
 
 
 Requirements

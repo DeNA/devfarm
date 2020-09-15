@@ -1,5 +1,14 @@
-/.git
-/.gitignore
+.dockerignore
+Dockerfile
+.env
+.git
+.gitignore
+.gitattributes
+README.md
+/.yamllint
+/.golangci.yml
+/.idea
+/.circleci
 /dist
 /build
 /test

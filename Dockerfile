@@ -6,6 +6,6 @@ RUN go build -a -tags netgo -installsuffix netgo -v -o ./dist/devfarm ./cmd/devf
 
 FROM amazon/aws-cli:2.0.48
 COPY --from=builder /go/src/devfarm/dist/* /usr/local/bin/
+VOLUME ["/app"]
 
 ENTRYPOINT ["devfarm"]
-CMD ["version"]
