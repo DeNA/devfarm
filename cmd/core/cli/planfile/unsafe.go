@@ -7,6 +7,7 @@ import (
 )
 
 type UnsafePlanFile struct {
+	Path           FilePath
 	InstanceGroups map[UnsafeInstanceGroupName][]UnsafePlan `yaml:"instance_groups"`
 }
 

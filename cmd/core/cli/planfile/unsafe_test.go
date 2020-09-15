@@ -2,6 +2,7 @@ package planfile
 
 import (
 	"fmt"
+	"github.com/dena/devfarm/cmd/core/exec"
 	"github.com/dena/devfarm/cmd/core/platforms"
 	"github.com/google/go-cmp/cmp"
 	"reflect"
@@ -13,17 +14,21 @@ func TestUnsafePlanfileIOS(t *testing.T) {
 	groupName := "ANY_INSTANCE_GROUP"
 
 	cases := []struct {
+		statErr       error
+		planfilePath  FilePath
 		unsafePlan    UnsafePlan
 		locationHint  string
 		expected      platforms.IOSPlan
 		expectedError bool
 	}{
 		{
+			statErr:      nil,
+			planfilePath: "/path/to/planfile.yml",
 			unsafePlan: UnsafePlan{
 				Platform:    "any platform",
 				Device:      "apple iphone xs",
 				IOS:         "12",
-				IPA:         "path/to/app.ipa",
+				IPA:         "./app.ipa",
 				IOSArgs:     []string{"-ARG1", "VALUE"},
 				LifetimeSec: 100,
 			},
@@ -35,7 +40,7 @@ func TestUnsafePlanfileIOS(t *testing.T) {
 					"apple iphone xs",
 					"12",
 				),
-				"path/to/app.ipa",
+				"/path/to/app.ipa",
 				[]string{"-ARG1", "VALUE"},
 				100*time.Second,
 				"location-1",
@@ -43,11 +48,13 @@ func TestUnsafePlanfileIOS(t *testing.T) {
 			expectedError: false,
 		},
 		{
+			statErr:      nil,
+			planfilePath: "/path/to/planfile.yml",
 			unsafePlan: UnsafePlan{
 				Platform:    "any platform",
 				Device:      "apple iphone xs",
 				IOS:         "12",
-				IPA:         "path/to/app.ipa",
+				IPA:         "./app.ipa",
 				LifetimeSec: 200,
 			},
 			locationHint: "location-2",
@@ -58,7 +65,7 @@ func TestUnsafePlanfileIOS(t *testing.T) {
 					"apple iphone xs",
 					"12",
 				),
-				"path/to/app.ipa",
+				"/path/to/app.ipa",
 				[]string{},
 				200*time.Second,
 				"location-2",
@@ -66,10 +73,12 @@ func TestUnsafePlanfileIOS(t *testing.T) {
 			expectedError: false,
 		},
 		{
+			statErr:      nil,
+			planfilePath: "/path/to/planfile.yml",
 			unsafePlan: UnsafePlan{
 				Device:      "apple iphone xs",
 				IOS:         "12",
-				IPA:         "path/to/app.ipa",
+				IPA:         "./app.ipa",
 				LifetimeSec: 300,
 			},
 			locationHint:  "location-3",
@@ -77,10 +86,12 @@ func TestUnsafePlanfileIOS(t *testing.T) {
 			expectedError: true,
 		},
 		{
+			statErr:      nil,
+			planfilePath: "/path/to/planfile.yml",
 			unsafePlan: UnsafePlan{
 				Platform:    "any platform",
 				IOS:         "12",
-				IPA:         "path/to/app.ipa",
+				IPA:         "./app.ipa",
 				LifetimeSec: 300,
 			},
 			locationHint:  "location-3",
@@ -88,6 +99,8 @@ func TestUnsafePlanfileIOS(t *testing.T) {
 			expectedError: true,
 		},
 		{
+			statErr:      nil,
+			planfilePath: "/path/to/planfile.yml",
 			unsafePlan: UnsafePlan{
 				Platform:    "any platform",
 				Device:      "apple iphone xs",
@@ -99,11 +112,13 @@ func TestUnsafePlanfileIOS(t *testing.T) {
 			expectedError: true,
 		},
 		{
+			statErr:      nil,
+			planfilePath: "/path/to/planfile.yml",
 			unsafePlan: UnsafePlan{
 				Platform: "any platform",
 				Device:   "apple iphone xs",
 				IOS:      "12",
-				IPA:      "path/to/app.ipa",
+				IPA:      "./app.ipa",
 			},
 			locationHint:  "location-3",
 			expected:      platforms.IOSPlan{},
@@ -122,7 +137,8 @@ func TestUnsafePlanfileIOS(t *testing.T) {
 		})
 
 		t.Run(fmt.Sprintf("%v.ValidateAsIOS(_)", c.unsafePlan), func(t *testing.T) {
-			got, err := ValidateAsIOS(c.unsafePlan, platforms.InstanceGroupName(groupName), c.locationHint)
+			validateAsIOS := NewIOSValidateFunc(exec.StubStatFunc(nil, c.statErr))
+			got, err := validateAsIOS(c.planfilePath, c.unsafePlan, platforms.InstanceGroupName(groupName), c.locationHint)
 
 			if c.expectedError {
 				if err == nil {
@@ -144,22 +160,26 @@ func TestUnsafePlanfileIOS(t *testing.T) {
 	}
 }
 
-func TestRawPlanFileAndroid(t *testing.T) {
+func TestUnsafePlanFileAndroid(t *testing.T) {
 	groupName := "ANY_INSTANCE_GROUP"
 
 	cases := []struct {
+		statErr       error
+		planfilePath  FilePath
 		unsafePlan    UnsafePlan
 		locationHint  string
 		expected      platforms.AndroidPlan
 		expectedError bool
 	}{
 		{
+			statErr:      nil,
+			planfilePath: "/path/to/planfile.yml",
 			unsafePlan: UnsafePlan{
 				Platform:     "any platform",
 				Device:       "google google pixel3",
 				Android:      "9",
 				AndroidAppID: "com.example.app",
-				APK:          "path/to/app.apk",
+				APK:          "./app.apk",
 				IntentExtras: []string{"-e", "ARG1", "VALUE"},
 				LifetimeSec:  100,
 			},
@@ -171,7 +191,7 @@ func TestRawPlanFileAndroid(t *testing.T) {
 					"google google pixel3",
 					"9",
 				),
-				"path/to/app.apk",
+				"/path/to/app.apk",
 				"com.example.app",
 				[]string{"-e", "ARG1", "VALUE"},
 				100*time.Second,
@@ -180,12 +200,14 @@ func TestRawPlanFileAndroid(t *testing.T) {
 			expectedError: false,
 		},
 		{
+			statErr:      nil,
+			planfilePath: "/path/to/planfile.yml",
 			unsafePlan: UnsafePlan{
 				Platform:     "any platform",
 				Device:       "google google pixel3",
 				Android:      "9",
 				AndroidAppID: "com.example.app",
-				APK:          "path/to/app.apk",
+				APK:          "./app.apk",
 				LifetimeSec:  200,
 			},
 			locationHint: "location-2",
@@ -196,7 +218,7 @@ func TestRawPlanFileAndroid(t *testing.T) {
 					"google google pixel3",
 					"9",
 				),
-				"path/to/app.apk",
+				"/path/to/app.apk",
 				"com.example.app",
 				[]string{},
 				200*time.Second,
@@ -205,10 +227,12 @@ func TestRawPlanFileAndroid(t *testing.T) {
 			expectedError: false,
 		},
 		{
+			statErr:      nil,
+			planfilePath: "/path/to/planfile.yml",
 			unsafePlan: UnsafePlan{
 				Device:       "google google pixel3",
 				Android:      "9",
-				APK:          "path/to/app.apk",
+				APK:          "./app.apk",
 				AndroidAppID: "com.example.app",
 				LifetimeSec:  300,
 			},
@@ -217,10 +241,12 @@ func TestRawPlanFileAndroid(t *testing.T) {
 			expectedError: true,
 		},
 		{
+			statErr:      nil,
+			planfilePath: "/path/to/planfile.yml",
 			unsafePlan: UnsafePlan{
 				Platform:     "any platform",
 				Android:      "9",
-				APK:          "path/to/app.apk",
+				APK:          "./app.apk",
 				AndroidAppID: "com.example.app",
 				LifetimeSec:  300,
 			},
@@ -229,6 +255,8 @@ func TestRawPlanFileAndroid(t *testing.T) {
 			expectedError: true,
 		},
 		{
+			statErr:      nil,
+			planfilePath: "/path/to/planfile.yml",
 			unsafePlan: UnsafePlan{
 				Platform:     "any platform",
 				Device:       "google google pixel3",
@@ -241,11 +269,13 @@ func TestRawPlanFileAndroid(t *testing.T) {
 			expectedError: true,
 		},
 		{
+			statErr:      nil,
+			planfilePath: "/path/to/planfile.yml",
 			unsafePlan: UnsafePlan{
 				Platform:    "any platform",
 				Device:      "google google pixel3",
 				Android:     "9",
-				APK:         "path/to/app.apk",
+				APK:         "./app.apk",
 				LifetimeSec: 300,
 			},
 			locationHint:  "location-3",
@@ -253,11 +283,13 @@ func TestRawPlanFileAndroid(t *testing.T) {
 			expectedError: true,
 		},
 		{
+			statErr:      nil,
+			planfilePath: "/path/to/planfile.yml",
 			unsafePlan: UnsafePlan{
 				Platform:     "any platform",
 				Device:       "google google pixel3",
 				Android:      "9",
-				APK:          "path/to/app.apk",
+				APK:          "./app.apk",
 				AndroidAppID: "com.example.app",
 			},
 			locationHint:  "location-3",
@@ -277,7 +309,8 @@ func TestRawPlanFileAndroid(t *testing.T) {
 		})
 
 		t.Run(fmt.Sprintf("%v.ValidateAsAndroid(_)", c.unsafePlan), func(t *testing.T) {
-			got, err := ValidateAsAndroid(c.unsafePlan, platforms.InstanceGroupName(groupName), c.locationHint)
+			validateAsAndroid := NewAndroidValidateFunc(exec.StubStatFunc(nil, c.statErr))
+			got, err := validateAsAndroid(c.planfilePath, c.unsafePlan, platforms.InstanceGroupName(groupName), c.locationHint)
 
 			if c.expectedError {
 				if err == nil {
@@ -315,7 +348,7 @@ func TestNewUnsafePlanFile(t *testing.T) {
 						DeviceName: "apple iphone xs",
 						OSVersion:  "12.0",
 					},
-					"path/to/app.ipa",
+					"./app.ipa",
 					platforms.IOSArgs{"-ARG"},
 					1*time.Second,
 					"location hint will be lost",
@@ -328,7 +361,7 @@ func TestNewUnsafePlanFile(t *testing.T) {
 							Platform:    "platform-1",
 							Device:      "apple iphone xs",
 							IOS:         "12.0",
-							IPA:         "path/to/app.ipa",
+							IPA:         "./app.ipa",
 							IOSArgs:     platforms.IOSArgs{"-ARG"},
 							LifetimeSec: 1,
 						},
@@ -346,7 +379,7 @@ func TestNewUnsafePlanFile(t *testing.T) {
 						DeviceName: "google google pixel 3",
 						OSVersion:  "9.0",
 					},
-					"path/to/app.apk",
+					"./app.apk",
 					"com.example.apk",
 					platforms.AndroidIntentExtras{"-e", "ARG"},
 					2*time.Second,
@@ -360,7 +393,7 @@ func TestNewUnsafePlanFile(t *testing.T) {
 							Platform:     "platform-2",
 							Device:       "google google pixel 3",
 							Android:      "9.0",
-							APK:          "path/to/app.apk",
+							APK:          "./app.apk",
 							IntentExtras: platforms.AndroidIntentExtras{"-e", "ARG"},
 							AndroidAppID: "com.example.apk",
 							LifetimeSec:  2,
