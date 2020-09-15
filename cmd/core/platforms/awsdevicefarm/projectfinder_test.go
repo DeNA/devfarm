@@ -2,7 +2,6 @@ package awsdevicefarm
 
 import (
 	"fmt"
-	"github.com/dena/devfarm/cmd/core/exec/awscli"
 	"github.com/dena/devfarm/cmd/core/exec/awscli/devicefarm"
 	"github.com/dena/devfarm/cmd/core/logging"
 	"github.com/dena/devfarm/cmd/core/platforms"
@@ -28,12 +27,10 @@ func TestFindProjectARN(t *testing.T) {
 				devicefarm.NewProject(
 					"devfarm-example",
 					projectARN,
-					awscli.NewTimestamp(0),
 				),
 				devicefarm.NewProject(
 					"devfarm-another",
 					anotherProjectARN,
-					awscli.NewTimestamp(0),
 				),
 			},
 			projectsError:    nil,

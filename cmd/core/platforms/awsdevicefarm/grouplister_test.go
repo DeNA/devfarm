@@ -2,7 +2,6 @@ package awsdevicefarm
 
 import (
 	"fmt"
-	"github.com/dena/devfarm/cmd/core/exec/awscli"
 	"github.com/dena/devfarm/cmd/core/exec/awscli/devicefarm"
 	"github.com/dena/devfarm/cmd/core/platforms"
 	"reflect"
@@ -11,7 +10,6 @@ import (
 
 func TestMapProjectsToInstanceGroups(t *testing.T) {
 	var anyARN devicefarm.ProjectARN = "arn:devicefarm:ANY_ARN"
-	anyTimestamp := awscli.NewTimestamp(0)
 
 	cases := []struct {
 		projects []devicefarm.Project
@@ -26,7 +24,6 @@ func TestMapProjectsToInstanceGroups(t *testing.T) {
 				devicefarm.NewProject(
 					"devfarm-example",
 					anyARN,
-					anyTimestamp,
 				),
 			},
 			expected: []platforms.InstanceGroupListEntry{
@@ -41,7 +38,6 @@ func TestMapProjectsToInstanceGroups(t *testing.T) {
 				devicefarm.NewProject(
 					"not-managed",
 					anyARN,
-					anyTimestamp,
 				),
 			},
 			expected: []platforms.InstanceGroupListEntry{},
