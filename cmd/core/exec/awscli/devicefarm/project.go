@@ -3,7 +3,6 @@ package devicefarm
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dena/devfarm/cmd/core/exec/awscli"
 	"github.com/dena/devfarm/cmd/core/platforms"
 	"strings"
 )
@@ -28,14 +27,12 @@ func (p *ProjectARN) UnmarshalJSON(bytes []byte) error {
 type Project struct {
 	Name    ProjectName      `json:"name"`
 	ARN     ProjectARN       `json:"arn"`
-	Created awscli.Timestamp `json:"created"`
 }
 
-func NewProject(name ProjectName, arn ProjectARN, created awscli.Timestamp) Project {
+func NewProject(name ProjectName, arn ProjectARN) Project {
 	return Project{
 		Name:    name,
 		ARN:     arn,
-		Created: created,
 	}
 }
 

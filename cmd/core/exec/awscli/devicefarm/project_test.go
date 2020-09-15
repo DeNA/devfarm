@@ -3,7 +3,6 @@ package devicefarm
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dena/devfarm/cmd/core/exec/awscli"
 	"github.com/dena/devfarm/cmd/core/platforms"
 	"github.com/dena/devfarm/cmd/core/testutil"
 	"testing"
@@ -98,7 +97,6 @@ func TestProject_MarshalJSON(t *testing.T) {
 		NewProject(
 			"MyProjectName",
 			"arn:aws:devicefarm:us-west-2:123456789101:project:5e01a8c7-c861-4c0a-b1d5-12345EXAMPLE",
-			awscli.NewTimestamp(1535675814),
 		),
 	}
 
