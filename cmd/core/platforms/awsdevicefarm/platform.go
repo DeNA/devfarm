@@ -38,6 +38,7 @@ func NewPlatform(bag platforms.Bag) platforms.Platform {
 	fileOpener := bag.GetFileOpener()
 	executor := bag.GetExecutor()
 	executableFinder := bag.GetFinder()
+	env := bag.GetEnvGetter()
 	hash := platforms.NewCRC32Hasher()
 
 	awsCmd := awscli.NewExecutor(executor)
@@ -84,7 +85,7 @@ func NewPlatform(bag platforms.Bag) platforms.Platform {
 		authStatusChecker: newAuthStatusChecker(
 			awscli.NewInstallStatusGetter(executableFinder),
 			awscli.NewVersionGetter(awsCmd),
-			awscli.NewConfigStatusGetter(awsCmd),
+			awscli.NewConfigStatusGetter(awsCmd, env),
 			devicefarm.NewAuthorizationStatusChecker(deviceFarmCmd),
 		),
 		deviceLister:  newDeviceEntryLister(devicefarm.NewDeviceLister(deviceFarmCmd)),

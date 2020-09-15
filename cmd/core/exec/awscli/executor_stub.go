@@ -12,9 +12,13 @@ func StubExecutor(stdout []byte, stderr []byte, err error) Executor {
 }
 
 func AnyExecutor() Executor {
-	return StubExecutor([]byte("STDOUT"), []byte("STDERR"), testutil.AnyError)
+	return AnyFailedExecutor()
 }
 
 func AnySuccessfulExecutor() Executor {
 	return StubExecutor([]byte("STDOUT"), []byte("STDERR"), nil)
+}
+
+func AnyFailedExecutor() Executor {
+	return StubExecutor([]byte("STDOUT"), []byte("STDERR"), testutil.AnyError)
 }
