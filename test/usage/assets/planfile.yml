@@ -3,7 +3,7 @@ instance_groups:
     - platform: any-platform
       ios: 12.0
       device: apple iphone xs
-      ipa: path/to/app.ipa
+      ipa: ./app.ipa
       args:
         - -ARG1
         - VALUE1
@@ -11,7 +11,7 @@ instance_groups:
     - platform: any-platform
       android: 9
       device: google google pixel3
-      apk: path/to/app.apk
+      apk: ./app.apk
       app_id: com.example.app
       intent_extras:
         - -e
