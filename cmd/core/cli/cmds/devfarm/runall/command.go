@@ -23,7 +23,7 @@ func command(args []string, procInout cli.ProcessInout) cli.ExitStatus {
 
 	bag := cli.ComposeBag(procInout, opts.verbose, opts.dryRun)
 
-	planFile, planFileErr := planfile.Read(opts.planFile, bag.GetFileOpener())
+	planFile, planFileErr := planfile.Read(opts.planFile, bag.GetFileOpener(), bag.GetStatFunc())
 	if planFileErr != nil {
 		_, _ = fmt.Fprintln(procInout.Stderr, fmt.Sprintf("invalid plan file:\n%s", planFileErr.Error()))
 		return cli.ExitAbnormal

@@ -14,5 +14,6 @@ func AnyBag() Bag {
 		exec.AnyFailedUploader(),
 		exec.AnyFailedFileOpener(),
 		exec.AnyEnvGetter(),
+		exec.AnyFailedStatFunc(),
 	)
 }

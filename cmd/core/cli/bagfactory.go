@@ -15,5 +15,6 @@ func ComposeBag(procInout ProcessInout, verbose bool, dryRun bool) platforms.Bag
 		exec.NewUploader(logger, dryRun),
 		exec.NewFileOpener(logger, dryRun),
 		exec.NewEnvGetter(),
+		exec.NewStatFunc(),
 	)
 }

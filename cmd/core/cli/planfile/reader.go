@@ -5,11 +5,11 @@ import (
 	"os"
 )
 
-func Read(filePath FilePath, open exec.FileOpener) (Planfile, error) {
+func Read(filePath FilePath, open exec.FileOpener, stat exec.StatFunc) (Planfile, error) {
 	file, openErr := open(string(filePath), os.O_RDONLY, 0)
 	if openErr != nil {
 		return Planfile{}, openErr
 	}
 	defer file.Close()
-	return Decode(file)
+	return Decode(filePath, file, NewValidateFunc(stat))
 }

@@ -13,6 +13,7 @@ type Bag struct {
 	uploader            exec.Uploader
 	fileOpener          exec.FileOpener
 	envGetter           exec.EnvGetter
+	statFunc            exec.StatFunc
 }
 
 func (bag Bag) GetLogger() logging.SeverityLogger {
@@ -43,6 +44,10 @@ func (bag Bag) GetEnvGetter() exec.EnvGetter {
 	return bag.envGetter
 }
 
+func (bag Bag) GetStatFunc() exec.StatFunc {
+	return bag.statFunc
+}
+
 func NewBag(
 	logger logging.SeverityLogger,
 	executor exec.Executor,
@@ -51,6 +56,7 @@ func NewBag(
 	uploader exec.Uploader,
 	fileOpener exec.FileOpener,
 	envGetter exec.EnvGetter,
+	statFunc exec.StatFunc,
 ) Bag {
 	return Bag{
 		logger:              logger,
@@ -60,5 +66,6 @@ func NewBag(
 		uploader:            uploader,
 		fileOpener:          fileOpener,
 		envGetter:           envGetter,
+		statFunc:            statFunc,
 	}
 }

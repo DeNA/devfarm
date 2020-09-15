@@ -33,8 +33,9 @@ func Command(args []string, procInout cli.ProcessInout) cli.ExitStatus {
 
 	logger := cli.NewLogger(false, procInout.Stderr)
 	open := exec.NewFileOpener(logger, false)
+	stat := exec.NewStatFunc()
 
-	planFile, planFileErr := planfile.Read(planFilePath, open)
+	planFile, planFileErr := planfile.Read(planFilePath, open, stat)
 	if planFileErr != nil {
 		_, _ = fmt.Fprintln(procInout.Stderr, planFileErr.Error())
 		return cli.ExitAbnormal

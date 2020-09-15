@@ -2,6 +2,7 @@ package planfile
 
 import (
 	"fmt"
+	"github.com/dena/devfarm/cmd/core/exec"
 	"github.com/dena/devfarm/cmd/core/platforms"
 	"github.com/google/go-cmp/cmp"
 	"reflect"
@@ -12,23 +13,24 @@ import (
 
 func TestDecode(t *testing.T) {
 	cases := []struct {
-		yaml          string
-		expected      Planfile
-		expectedError bool
+		planfilePath FilePath
+		yaml         string
+		expected     Planfile
 	}{
 		{
-			yaml:          `instance_groups: {}`,
-			expected:      Planfile{},
-			expectedError: false,
+			planfilePath: "/path/to/planfile.yml",
+			yaml:         `instance_groups: {}`,
+			expected:     Planfile{},
 		},
 		{
+			planfilePath: "/path/to/planfile.yml",
 			yaml: `
 instance_groups:
   group1:
     - platform: any-platform
       ios: 12.0
       device: apple iphone xs
-      ipa: "path/to/app.ipa"
+      ipa: "./app.ipa"
       lifetime_sec: 100
 `,
 			expected: Planfile{
@@ -40,23 +42,23 @@ instance_groups:
 							"apple iphone xs",
 							"12.0",
 						),
-						"path/to/app.ipa",
+						"/path/to/app.ipa",
 						[]string{},
 						100*time.Second,
 						`at 1-th plan for instance group "group1"`,
 					).Either(),
 				},
 			},
-			expectedError: false,
 		},
 		{
+			planfilePath: "/path/to/planfile.yml",
 			yaml: `
 instance_groups:
   group2:
     - platform: any-platform
       android: 9
       device: google google pixel3
-      apk: path/to/app.apk
+      apk: ./app.apk
       app_id: com.example.app
       lifetime_sec: 200
 `,
@@ -69,7 +71,7 @@ instance_groups:
 							"google google pixel3",
 							"9",
 						),
-						"path/to/app.apk",
+						"/path/to/app.apk",
 						"com.example.app",
 						[]string{},
 						200*time.Second,
@@ -77,16 +79,16 @@ instance_groups:
 					).Either(),
 				},
 			},
-			expectedError: false,
 		},
 		{
+			planfilePath: "/path/to/planfile.yml",
 			yaml: `
 instance_groups:
   group1:
     - platform: any-platform
       ios: 12.0
       device: apple iphone xs
-      ipa: "path/to/app.ipa"
+      ipa: ./app.ipa
       args:
         - -ARG1
         - VALUE1
@@ -95,7 +97,7 @@ instance_groups:
     - platform: any-platform
       android: 9
       device: google google pixel3
-      apk: path/to/app.apk
+      apk: ./app.apk
       app_id: com.example.app
       intent_extras:
         - -e
@@ -112,7 +114,7 @@ instance_groups:
 							"apple iphone xs",
 							"12.0",
 						),
-						"path/to/app.ipa",
+						"/path/to/app.ipa",
 						[]string{"-ARG1", "VALUE1"},
 						100*time.Second,
 						`at 1-th plan for instance group "group1"`,
@@ -124,7 +126,7 @@ instance_groups:
 							"google google pixel3",
 							"9",
 						),
-						"path/to/app.apk",
+						"/path/to/app.apk",
 						"com.example.app",
 						[]string{"-e", "ARG1", "VALUE1"},
 						200*time.Second,
@@ -132,34 +134,21 @@ instance_groups:
 					).Either(),
 				},
 			},
-			expectedError: false,
-		},
-		{
-			yaml:          ``,
-			expected:      Planfile{},
-			expectedError: true,
 		},
 	}
 
 	for _, c := range cases {
 		t.Run(fmt.Sprintf("Decode(strings.NewReader(%q))", c.yaml), func(t *testing.T) {
-			got, err := Decode(strings.NewReader(c.yaml))
+			got, err := Decode(c.planfilePath, strings.NewReader(c.yaml), NewValidateFunc(exec.AnySuccessfulStatFunc()))
 
-			if c.expectedError {
-				if err == nil {
-					t.Errorf("got (_, nil), want (_, error)")
-					return
-				}
-			} else {
-				if err != nil {
-					t.Errorf("got (_, %v), want (_, nil)", err)
-					return
-				}
+			if err != nil {
+				t.Errorf("got (_, %v), want (_, nil)", err)
+				return
+			}
 
-				if !reflect.DeepEqual(got.Plans(), c.expected.Plans()) {
-					t.Error(cmp.Diff(c.expected.Plans(), got.Plans()))
-					return
-				}
+			if !reflect.DeepEqual(got.Plans(), c.expected.Plans()) {
+				t.Error(cmp.Diff(c.expected.Plans(), got.Plans()))
+				return
 			}
 		})
 	}
