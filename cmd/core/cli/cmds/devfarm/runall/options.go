@@ -4,6 +4,8 @@ import (
 	"errors"
 	"github.com/dena/devfarm/cmd/core/cli"
 	"github.com/dena/devfarm/cmd/core/cli/planfile"
+	"os"
+	"path/filepath"
 )
 
 type planFilePath string
@@ -49,6 +51,14 @@ func validatePlanFiles(unsafePlanFiles []string) (planFilePath, error) {
 		return "", errors.New("too many plan files")
 	}
 
-	plan := planFilePath(unsafePlanFiles[0])
-	return plan, nil
+	unsafePlanFilePathAbs, err := filepath.Abs(unsafePlanFiles[0])
+	if err != nil {
+		return "", err
+	}
+
+	if _, err = os.Stat(unsafePlanFilePathAbs); err != nil {
+		return "", err
+	}
+
+	return planFilePath(unsafePlanFilePathAbs), nil
 }
