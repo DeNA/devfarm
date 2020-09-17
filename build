@@ -7,7 +7,7 @@ BASE_DIR="$(cd "$(dirname "$0")"; pwd)"
 
 main() {
 	local tag="${1:-latest}"
-	local image_id='asia.gcr.io/dena-internal-swet-gcp/devfarm'
+	local image_id='ghcr.io/dena/devfarm'
 
 	(cd "$BASE_DIR"
 		docker build . -t "${image_id}:${tag}"
