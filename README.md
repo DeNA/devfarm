@@ -471,13 +471,13 @@ $ go get -u github.com/dena/devfarm/cmd/devfarm
 <summary>Using Docker</summary>
 
 ```console
-$ docker pull <image_id>
+$ docker pull docker.pkg.github.com/dena/devfarm/devfarm:latest
 
 $ cat .env
 AWS_ACCESS_KEY_ID=***
 AWS_SECRET_ACCESS_KEY=***
 
-$ docker run --rm --env-file ./.env <image_id> auth-status
+$ docker run --rm --env-file ./.env docker.pkg.github.com/dena/devfarm/devfarm:latest auth-status
 
 $ tree -a "$(pwd)"
 .
@@ -489,7 +489,7 @@ $ tree -a "$(pwd)"
 
 1 directory, 4 files
 
-$ docker run --rm --env-file ./.env -v "$(pwd)/app:/app" <image_id> run-all /app/planfile
+$ docker run --rm --env-file ./.env -v "$(pwd)/app:/app" docker.pkg.github.com/dena/devfarm/devfarm:latest run-all /app/planfile
 ```
 </details>
 
