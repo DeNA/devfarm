@@ -23,7 +23,7 @@ jobs:
     steps:
       - run:
           name: Install devfarm
-          command: go get github.com/DeNA/devfarm/cmd/devfarm
+          command: go get github.com/dena/devfarm/cmd/devfarm
       - run:
           name: Test
           command: devfarm version
