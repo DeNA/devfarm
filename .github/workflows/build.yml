@@ -4,7 +4,6 @@ on:
   workflow_dispatch:
   push:
     branches:
-    - replace/ci
     - master
   pull_request:
 
@@ -22,11 +21,6 @@ jobs:
         run: |
           go env
           go get -u github.com/go-bindata/go-bindata/go-bindata
-
-#       - name: Install devfarm
-#         run: |
-#           go get github.com/dena/devfarm/cmd/devfarm
-#           devfarm version
 
       - name: Build assets
         run: go generate ./...
