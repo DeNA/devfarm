@@ -1,0 +1,29 @@
+name: Unit Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+    - master
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@main
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.14'
+
+      - name: Install dependencies
+        run: |
+          go env
+          go get -u github.com/go-bindata/go-bindata/go-bindata
+
+      - name: Build assets
+        run: go generate ./...
+
+      - name: Test
+        run: ./test/test-all.bash
