@@ -1,7 +1,7 @@
 devfarm
 =======
 
-[![CircleCI](https://circleci.com/gh/DeNA/devfarm/tree/master.svg?style=svg)](https://circleci.com/gh/DeNA/devfarm/tree/master)
+[![Unit Test](https://github.com/DeNA/devfarm/actions/workflows/unittest.yml/badge.svg?branch=master&event=push)](https://github.com/DeNA/devfarm/actions/workflows/unittest.yml)
 
 Tools to control iOS and Android mobile apps across several device farms such as AWS Device Farm.  The purpose of this project is portability among major device farms (including emulator/simulator farms) and be able to do Domain-Specific Tests across device farms.
 
