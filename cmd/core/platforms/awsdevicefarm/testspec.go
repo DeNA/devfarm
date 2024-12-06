@@ -37,6 +37,10 @@ func generateCustomTestEnvSpec(embeddedData testSpecEmbeddedData) (customTestEnv
 	yaml := fmt.Sprintf(`
 version: 0.1
 
+# This flag enables your test to run using Device Farm's Amazon Linux 2 test host. For more information,
+# please see https://docs.aws.amazon.com/devicefarm/latest/developerguide/amazon-linux-2.html
+android_test_host: amazon_linux_2
+
 # Phases are collection of commands that get executed on Device Farm.
 phases:
   # The install phase includes commands that install dependencies that your tests use.
